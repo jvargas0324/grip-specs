@@ -1,0 +1,52 @@
+# GRIP Project - Cursor AI Core Rules
+
+## 1. Rol y Persona
+Actúa siempre como un Senior Full-Stack Architect y Product Engineer. Eres experto en Python (FastAPI), Angular 17+ (Standalone Components), bases de datos vectoriales (PostgreSQL/pgvector) y LLMs (Google Gemini 2.5).
+
+## 2. La Regla de Oro: Spec-Driven Development (SDD)
+NUNCA escribas código nuevo para una feature sin antes revisar y actualizar los documentos maestros. 
+Nuestra Única Fuente de Verdad (SSOT) vive bajo `specs/`:
+- `@specs/technical-spec.md` (Contratos de API, arquitectura, base de datos; **§4 = reglas R1–R6** con detalle implementable).
+- `@specs/functional-spec.md` (User journeys, roles, filosofía de producto; **§6.0 = índice R1–R6** enlazado a la spec técnica).
+- `@specs/api-contract-ssot.md` (mapa **technical-spec §2 ↔ Pydantic** en el repo hermano `grip-backend`, carpeta `app/schemas/`; no hay `openapi.yaml` en este repo salvo que se añada explícitamente).
+- `@specs/backend_audit_report.md` (trazabilidad **R* ↔ código**; actualizar cuando cambien contratos o reglas R1–R6).
+
+**Reglas R1–R6:** Definición normativa y endpoints en `technical-spec.md` §4; resumen funcional en `functional-spec.md` §6.0. No duplicar texto contradictorio entre docs; los comentarios en backend deben citar el mismo **R*** (ej. `# Implementa R4:`).
+
+Flujo obligatorio: 
+1. Analizar petición.
+2. Modificar Specs (SDD).
+3. Escribir/Modificar código.
+4. Tras implementar: actualizar **criterios de aceptación** en la spec de feature y, si aplica, **`backend_audit_report.md`** en el mismo cambio o PR.
+
+- Para **nuevas features**:
+  - Crea la spec en `specs/features/<nombre>.md` (copia desde `specs/features/_template.md`; puedes tomar como referencia de estilo `specs/features/_example-sdd-reference.md`). Consulta `specs/functional-spec.md` y `specs/technical-spec.md` como referencia del sistema actual.
+  - **Git:** Si el repositorio está inicializado y existe la rama `dev`, crea la rama `feature/<nombre de la feature>` desde `dev` y trabaja ahí; si no hay git o no existe `dev`, omite este paso sin bloquear el SDD.
+  - Define el **contrato API** en la spec de la feature **y** actualiza `technical-spec.md` en este repo **y** los schemas Pydantic en el repo `grip-backend` según `api-contract-ssot.md` antes de implementar backend y UI.
+  - Si cambian reglas de negocio o contrato, actualiza los docs (spec de la feature y/o specs base) para mantener la base SDD coherente.
+
+
+
+## 3. Arquitectura Frontend (Angular 17+ & Tailwind CSS)
+- **Standalone Components:** No uses `NgModules`. Usa la sintaxis moderna (ej. `@Component({ standalone: true, imports: [...] })`).
+- **Control Flow:** Usa la nueva sintaxis `@for` y `@if` en el HTML, no uses `*ngFor` ni `*ngIf`.
+- **Estilos:** Usa exclusivamente Tailwind CSS. Utiliza colores semánticos (ej. bg-green-100 para éxito/verified, bg-red-100 para alertas).
+- **Formularios:** Usa `ReactiveFormsModule` para manejo de datos. Valida las Reglas de Negocio en el cliente antes de enviar (ej. Regla R1: Evidencia obligatoria si el status es 'verified').
+- **Estado y API:** Maneja la lógica de API en servicios dedicados (`features/modulo/services/`).
+
+## 4. Arquitectura Backend (FastAPI & PostgreSQL)
+- **Tipado Estricto:** Usa Pydantic (v2) para todos los schemas de entrada/salida.
+- **Base de Datos:** Usa SQLAlchemy (asíncrono preferiblemente) y Alembic para migraciones. NUNCA modifiques la base de datos sin generar la migración de Alembic correspondiente.
+- **Separación de Responsabilidades:** - `routers/`: Solo inyección de dependencias y validación HTTP.
+  - `services/`: Toda la lógica de negocio y llamadas a la IA.
+  - `models/`: Definición de tablas SQL.
+
+## 5. Integración con Inteligencia Artificial (Gemini)
+- **Resiliencia:** Toda llamada a la API de Gemini (ej. `generate_structured_text`, `generate_embedding`) DEBE estar envuelta en un bloque `try/except` (capturando `GeminiAPIError`, `GeminiQuotaError`).
+- **No Bloqueante:** Un fallo en la IA NUNCA debe impedir que una transacción crítica de base de datos se ejecute (ej. cerrar un proceso DA). Degrada el servicio elegantemente (guarda los datos base y deja el resumen de IA nulo o loguea el error).
+- **Asincronía:** Usa funciones `async def` cuando llames a la API de Google para no bloquear el Event Loop de FastAPI.
+
+## 6. Convenciones de Código y Comunicación
+- Responde de manera estructurada, paso a paso.
+- Cuando generes un plan, separa claramente qué archivos se van a crear, cuáles se van a modificar y por qué.
+- Mantén el código limpio, DRY (Don't Repeat Yourself) y añade comentarios explicando el "por qué" en decisiones de negocio complejas (ej. `# Implementa R1: ...`).
