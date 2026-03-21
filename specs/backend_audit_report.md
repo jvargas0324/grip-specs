@@ -1,6 +1,6 @@
 # Backend Audit Report — GRIP API
 
-**Spec de referencia:** Technical Spec **v7.10** (SDD / contrato Ask GRIP canónico + NFR IA)  
+**Spec de referencia:** Technical Spec **v7.11** (UI tema corporativo documentado en feature ui-board-refresh-v1)  
 **Functional Spec:** Especificación funcional maestra (Fase 1), índice R1–R6 en §6.0  
 **Alcance:** Código en `grip-backend/app` (config, core, db/models, schemas, api, services).  
 **Última actualización de este informe:** 2026-03-21 (coherencia SDD: `/api/v1/chat`, resiliencia IA §3.F).
@@ -25,7 +25,7 @@
 | Migración Alembic para ai_summary / suggested_action | 🟢 PASS | `alembic/versions/0004_add_findings_ai_summary_suggested_action.py` añade ambas columnas. |
 | Columna `embedding` en findings con 768 dimensiones | 🟢 PASS | `findings.py`: `Vector(768)`. Migración 0003 ya aplica 768. |
 | Columna `embedding` en strategic_feedback con 768 dimensiones | 🟢 PASS | `app/db/models/strategic_feedback.py`: `Vector(768)`. |
-| Coherencia spec v7.10 ↔ modelos SQLAlchemy | 🟢 PASS | Tabla findings en spec incluye ai_summary, suggested_action, embedding VECTOR(768); modelos alineados. |
+| Coherencia spec v7.11 ↔ modelos SQLAlchemy | 🟢 PASS | Tabla findings en spec incluye ai_summary, suggested_action, embedding VECTOR(768); modelos alineados. |
 
 ---
 
@@ -98,4 +98,4 @@ Normativa documentada en [technical-spec.md §3.F](technical-spec.md) (resilienc
 
 ---
 
-*Fin del reporte. Alineado con Technical Spec v7.10 y revisión SDD 2026-03-21.*
+*Fin del reporte. Alineado con Technical Spec v7.11 y revisión SDD 2026-03-21.*

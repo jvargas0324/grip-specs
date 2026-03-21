@@ -1,8 +1,8 @@
 # 🛠 Technical Specification Master: Proyecto GRIP (Fase 1)
-**Versión:** 7.10 (SDD / contrato Ask GRIP canónico + NFR IA)
+**Versión:** 7.11 (UI: tema corporativo grip-frontend)
 **Alcance:** Persistencia de datos, Contratos de API, Inteligencia de Extracción y Gobierno.
 **Arquitectura Core:** PostgreSQL (Relacional) + pgvector (Vectorial) + Python/FastAPI Backend + Front Angular
-**Alineación:** Revisión documental 2026-03-21 (v7.10 en sync con [backend_audit_report.md](backend_audit_report.md)) · Trazabilidad implementación: mismo informe (actualizar tras cambios de contrato o R*).
+**Alineación:** Revisión documental 2026-03-21 (v7.11 en sync con [backend_audit_report.md](backend_audit_report.md)) · Trazabilidad implementación: mismo informe (actualizar tras cambios de contrato o R*).
 
 ---
 
@@ -328,6 +328,8 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
 
 ## 6. Arquitectura Frontend (Angular)
 
+* **Sistema visual (tema corporativo):** Tokens de color (variables CSS + clases Tailwind `grip-*`), tipografía Inter / JetBrains Mono, y tema **claro/oscuro** (`class` `dark` en `html`) con persistencia en cliente. Detalle y criterios de aceptación: [specs/features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md). Sin cambio de contrato API.
+
 * **Rutas principales (Fase 1):**
   * `/dashboard`: Dashboard del Jefe de Zona (Pre-Visita), muestra hallazgos abiertos y acciones principales.
   * `/checklist`: Formulario de Ingesta para que el Jefe de Zona registre una nueva visita y sus hallazgos.
@@ -361,7 +363,7 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
   * `WeeklyService` (`features/weekly/services/weekly.service.ts`): `getWeeklySummary(params)`. Llama a `GET /api/v1/weekly/summary` con `store_id` o `store_code` y opcionalmente `start_date`, `end_date`.
 
 * **Módulo 4 - Ask GRIP (Chat):**
-  * `AskGripComponent` (`features/chat/ask-grip/`): Interfaz conversacional estilo ChatGPT. Selector opcional de `store_code`. Contenedor scrollable con historial de mensajes (burbujas: usuario derecha/azul, IA izquierda/gris). Input inferior + botón enviar. Estado de carga "La IA está pensando...".
+  * `AskGripComponent` (`features/chat/ask-grip/`): Interfaz conversacional estilo ChatGPT. Selector opcional de `store_code`. Contenedor scrollable con historial de mensajes (burbujas: usuario con acento corporativo / superficie elevada; IA con superficie muted). Input inferior + botón enviar. Estado de carga "La IA está pensando...".
   * `ChatService` (`features/chat/services/chat.service.ts`): `sendMessage(payload: { message, store_code? })`. Llama a `POST /api/v1/chat` con el payload y devuelve `{ answer, evidence }`.
 
 

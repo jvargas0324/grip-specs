@@ -3,7 +3,7 @@
 **Estado:** Final y Definitiva (Ultra-Completa)  
 **Metodología:** Spec-Driven Development (SDD)  
 **Concepto Central:** *Trust Through Control* (Confianza a través del Control)  
-**Alineación:** Revisión R1–R6 / SDD 2026-03-21 · Spec técnica **v7.10**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
+**Alineación:** Revisión R1–R6 / SDD 2026-03-21 · Spec técnica **v7.11**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
 
 ---
 

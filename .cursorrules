@@ -18,12 +18,16 @@ Nuestra Única Fuente de Verdad (SSOT) vive bajo `specs/`:
 Flujo obligatorio: 
 1. Analizar petición.
 2. Modificar Specs (SDD).
-3. Escribir/Modificar código.
-4. Tras implementar: actualizar **criterios de aceptación** en la spec de feature y, si aplica, **`backend_audit_report.md`** en el mismo cambio o PR.
+3. **Git (nuevas features):** En cada repositorio donde vayas a tocar código o docs de la feature, crear y usar la rama `feature/<nombre>` desde `dev` cuando exista `dev` (detalle en viñeta **Git (obligatorio)** más abajo).
+4. Escribir/Modificar código **solo** en la rama `feature/<nombre>` de cada repo afectado (salvo hotfix acordado explícitamente).
+5. Tras implementar: actualizar **criterios de aceptación** en la spec de feature y, si aplica, **`backend_audit_report.md`** en el mismo cambio o PR.
 
 - Para **nuevas features**:
   - Crea la spec en `specs/features/<nombre>.md` (copia desde `specs/features/_template.md`; puedes tomar como referencia de estilo `specs/features/_example-sdd-reference.md`). Consulta `specs/functional-spec.md` y `specs/technical-spec.md` como referencia del sistema actual.
-  - **Git:** Si el repositorio está inicializado y existe la rama `dev`, crea la rama `feature/<nombre de la feature>` desde `dev` y trabaja ahí; si no hay git o no existe `dev`, omite este paso sin bloquear el SDD.
+  - **Git (obligatorio):** El slug de rama debe coincidir con el de la spec: `feature/<nombre>` en **kebab-case** (ej. spec `ui-board-refresh-v1.md` → rama `feature/ui-board-refresh-v1`).
+    - En **cada** repo Git que la feature modifique (`grip-specs`, `grip-backend`, `grip-frontend`, etc.), **antes** de commits relevantes: comprobar si existe `dev` (local o `origin/dev` tras `git fetch`). Si existe **`dev`**, es **obligatorio** situarte en `dev` actualizada (`git checkout dev` + `git pull` con el remoto configurado) y crear **`git checkout -b feature/<nombre>`**. Toda la implementación y commits de esa feature en ese repo van en esa rama hasta el PR/merge; **no** commitear la feature directamente en `main` ni en `dev`.
+    - Si en un repo **no** hay `dev` ni `origin/dev`, **no omitas en silencio:** indícalo en la respuesta al usuario y, según el caso, crea `feature/<nombre>` desde `main` documentando la excepción o pide al usuario crear/alinear `dev` primero.
+    - Si no hay repositorio Git inicializado, indícalo y continúa el SDD sin bloquear.
   - Define el **contrato API** en la spec de la feature **y** actualiza `technical-spec.md` en este repo **y** los schemas Pydantic en el repo `grip-backend` según `api-contract-ssot.md` antes de implementar backend y UI.
   - Si cambian reglas de negocio o contrato, actualiza los docs (spec de la feature y/o specs base) para mantener la base SDD coherente.
   - **Sincronía de versión:** al publicar cambios en contrato o R1–R6, actualiza `technical-spec.md`, `functional-spec.md` §6.0 si aplica, `api-contract-ssot.md` y **`backend_audit_report.md`**; **reconcilia** el número de versión del encabezado del audit con el campo **Versión** de `technical-spec.md`.
