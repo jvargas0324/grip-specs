@@ -12,6 +12,8 @@
 
 - Reglas de negocio existentes que aplican: [functional-spec.md](../functional-spec.md) (secciones X, Y).
 - Contrato y arquitectura: [technical-spec.md](../technical-spec.md). Nuevos endpoints o cambios deben alinearse con la API actual.
+- Si la feature usa **IA / Gemini:** [technical-spec.md §3](../technical-spec.md) y §3.F (resiliencia).
+- Si la feature toca **reglas R1–R6** o estados de hallazgos / DA / CEO: [technical-spec.md §4](../technical-spec.md) y [functional-spec.md §6.0](../functional-spec.md).
 
 ## 3. Actores y permisos
 

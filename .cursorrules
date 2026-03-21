@@ -11,6 +11,8 @@ Nuestra Única Fuente de Verdad (SSOT) vive bajo `specs/`:
 - `@specs/api-contract-ssot.md` (mapa **technical-spec §2 ↔ Pydantic** en el repo hermano `grip-backend`, carpeta `app/schemas/`; no hay `openapi.yaml` en este repo salvo que se añada explícitamente).
 - `@specs/backend_audit_report.md` (trazabilidad **R* ↔ código**; actualizar cuando cambien contratos o reglas R1–R6).
 
+- **Convenciones de frontend, rutas de servicios por feature y stack detallado (Python/Angular/DB):** fuente canónica en `technical-spec.md` **§6** (Frontend) y **§7** (ecosistema backend). Estas rules solo reiteran lo imprescindible para el día a día en el IDE.
+
 **Reglas R1–R6:** Definición normativa y endpoints en `technical-spec.md` §4; resumen funcional en `functional-spec.md` §6.0. No duplicar texto contradictorio entre docs; los comentarios en backend deben citar el mismo **R*** (ej. `# Implementa R4:`).
 
 Flujo obligatorio: 
@@ -24,25 +26,26 @@ Flujo obligatorio:
   - **Git:** Si el repositorio está inicializado y existe la rama `dev`, crea la rama `feature/<nombre de la feature>` desde `dev` y trabaja ahí; si no hay git o no existe `dev`, omite este paso sin bloquear el SDD.
   - Define el **contrato API** en la spec de la feature **y** actualiza `technical-spec.md` en este repo **y** los schemas Pydantic en el repo `grip-backend` según `api-contract-ssot.md` antes de implementar backend y UI.
   - Si cambian reglas de negocio o contrato, actualiza los docs (spec de la feature y/o specs base) para mantener la base SDD coherente.
-
-
+  - **Sincronía de versión:** al publicar cambios en contrato o R1–R6, actualiza `technical-spec.md`, `functional-spec.md` §6.0 si aplica, `api-contract-ssot.md` y **`backend_audit_report.md`**; **reconcilia** el número de versión del encabezado del audit con el campo **Versión** de `technical-spec.md`.
 
 ## 3. Arquitectura Frontend (Angular 17+ & Tailwind CSS)
 - **Standalone Components:** No uses `NgModules`. Usa la sintaxis moderna (ej. `@Component({ standalone: true, imports: [...] })`).
 - **Control Flow:** Usa la nueva sintaxis `@for` y `@if` en el HTML, no uses `*ngFor` ni `*ngIf`.
 - **Estilos:** Usa exclusivamente Tailwind CSS. Utiliza colores semánticos (ej. bg-green-100 para éxito/verified, bg-red-100 para alertas).
 - **Formularios:** Usa `ReactiveFormsModule` para manejo de datos. Valida las Reglas de Negocio en el cliente antes de enviar (ej. Regla R1: Evidencia obligatoria si el status es 'verified').
-- **Estado y API:** Maneja la lógica de API en servicios dedicados (`features/modulo/services/`).
+- **Estado y API:** Maneja la lógica de API en servicios dedicados por feature; **rutas y nombres** según `technical-spec.md` §6 (ej. `features/ingestion/services/`, `features/chat/services/`).
 
 ## 4. Arquitectura Backend (FastAPI & PostgreSQL)
 - **Tipado Estricto:** Usa Pydantic (v2) para todos los schemas de entrada/salida.
 - **Base de Datos:** Usa SQLAlchemy (asíncrono preferiblemente) y Alembic para migraciones. NUNCA modifiques la base de datos sin generar la migración de Alembic correspondiente.
-- **Separación de Responsabilidades:** - `routers/`: Solo inyección de dependencias y validación HTTP.
-  - `services/`: Toda la lógica de negocio y llamadas a la IA.
-  - `models/`: Definición de tablas SQL.
+- **Separación de Responsabilidades** (repo `grip-backend`, carpeta `app/`):
+  - `api/`: Routers FastAPI; inyección de dependencias y validación HTTP.
+  - `services/`: Lógica de negocio y llamadas a la IA.
+  - `db/models/`: Definición de tablas SQLAlchemy.
 
 ## 5. Integración con Inteligencia Artificial (Gemini)
-- **Resiliencia:** Toda llamada a la API de Gemini (ej. `generate_structured_text`, `generate_embedding`) DEBE estar envuelta en un bloque `try/except` (capturando `GeminiAPIError`, `GeminiQuotaError`).
+- **Normativa extendida y trazabilidad:** `technical-spec.md` §3 y **§3.F** (resiliencia y degradación); auditoría en `backend_audit_report.md` §D.
+- **Resiliencia:** Toda llamada a la API de Gemini (ej. `generate_structured_text`, `generate_embedding`) DEBE estar envuelta en un bloque `try/except` (capturando `GeminiAPIError`, `GeminiQuotaError`; incluir `GeminiTimeoutError` cuando aplique).
 - **No Bloqueante:** Un fallo en la IA NUNCA debe impedir que una transacción crítica de base de datos se ejecute (ej. cerrar un proceso DA). Degrada el servicio elegantemente (guarda los datos base y deja el resumen de IA nulo o loguea el error).
 - **Asincronía:** Usa funciones `async def` cuando llames a la API de Google para no bloquear el Event Loop de FastAPI.
 

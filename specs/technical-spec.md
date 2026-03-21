@@ -1,8 +1,8 @@
 # 🛠 Technical Specification Master: Proyecto GRIP (Fase 1)
-**Versión:** 7.9 (SDD / R* alineación con código)
+**Versión:** 7.10 (SDD / contrato Ask GRIP canónico + NFR IA)
 **Alcance:** Persistencia de datos, Contratos de API, Inteligencia de Extracción y Gobierno.
 **Arquitectura Core:** PostgreSQL (Relacional) + pgvector (Vectorial) + Python/FastAPI Backend + Front Angular
-**Alineación:** Revisión documental 2025-03-21 · Trazabilidad implementación: [backend_audit_report.md](backend_audit_report.md) (actualizar tras cambios de contrato o R*).
+**Alineación:** Revisión documental 2026-03-21 (v7.10 en sync con [backend_audit_report.md](backend_audit_report.md)) · Trazabilidad implementación: mismo informe (actualizar tras cambios de contrato o R*).
 
 ---
 
@@ -214,6 +214,8 @@ CREATE TABLE da_findings_map (
 
 ### Módulo 4: RAG Query / Ask GRIP (Chat)
 
+* **Contrato canónico (producto / Angular):** **`POST /api/v1/chat`**. Es el path que usa el SPA (`ChatService` → base URL `/api/v1` + `/chat`). Requiere autenticación JWT vía `get_current_user` en `grip-backend/app/api/chat.py`.
+
 **POST** `/api/v1/chat`
 
 * **Payload (JSON):**
@@ -226,10 +228,11 @@ CREATE TABLE da_findings_map (
 * **Logic:** Convierte `message` en query RAG. Si `store_code` está presente, filtra `findings` por tienda (`visits.store_id` → `stores.code`). Ejecuta búsqueda vectorial sobre `findings.embedding` y `strategic_feedback.embedding`. Gemini genera la respuesta contextual.
 * **Response:** `{ "answer": "STRING", "evidence": [{ "source_type", "source_id", "score", "excerpt" }] }`
 
-**POST** `/api/v1/query/ask-grip` *(alternativo, mismo contrato)*
+**POST** `/api/v1/query/ask-grip` *(alias / integración)*
 
-* **Payload:** `{ "query": "STRING", "store_code": "STRING (opcional)" }`
-* **Logic:** Idéntico a `/api/v1/chat`; `query` equivale a `message`.
+* **Payload:** `{ "query": "STRING", "store_code": "STRING (opcional)" }` (schema compartido: `AskGripRequest` en `app/schemas/rag.py`; `query` equivale a `message` del endpoint canónico).
+* **Logic:** Misma implementación de negocio que `/api/v1/chat` (`rag_service.ask_grip`). Expuesto en `grip-backend/app/api/rag.py`.
+* **Auth:** Hoy el router **no** aplica `get_current_user` en la firma del handler (diferencia respecto a `/api/v1/chat`). Tratar como **deuda de seguridad / alineación** hasta que se unifique; no eliminar el alias sin avisar a integraciones que lo consuman.
 
 ### Módulo 5: DA (Acto de Gobierno)
 
@@ -283,6 +286,16 @@ CREATE TABLE da_findings_map (
 * **Model:** `gemini-2.5-flash-lite` (Aprovechando su ventana de contexto extendida).
 * **Generación Expediente:** "Eres un Auditor Forense. Analiza el historial de visitas, respuestas al COO y fotos de los últimos 3 meses. Redacta los 'Hechos Probados' del DA."
 * **Causa Raíz:** "Basado en la persistencia del fallo, ¿es este un problema de recursos, de capacitación o de negligencia de supervisión? Aplica los 5 Whys."
+
+### F. Resiliencia y degradación (implementación)
+
+Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y con las reglas de proyecto en `.cursorrules` (integración Gemini).
+
+* **Excepciones tipadas:** Usar `GeminiAPIError` (base), `GeminiQuotaError` (cuota / rate limit) y `GeminiTimeoutError` (timeout) para fallos de la API de Google; el cliente las eleva tras mapear excepciones de `google.api_core`.
+* **Envolver llamadas:** Toda invocación a `generate_structured_text`, `generate_plain_text`, `generate_embedding` (o equivalentes async del cliente) en servicios debe ir en `try/except` capturando al menos `GeminiAPIError` y `GeminiQuotaError` donde aplique, o delegar en un manejador de ruta que las traduzca a HTTP (ej. ingestión: `app/api/ingestion.py`).
+* **No bloquear transacciones críticas:** Un fallo de IA no debe impedir persistir el resultado principal cuando el negocio lo exija. **Referencia:** cierre de DA (`da_service.close_da`): si el embedding R6 falla, se registra warning y el `commit` del cierre sigue ejecutándose.
+* **Asincronía:** Las funciones que llaman al SDK de Gemini deben ser `async` y usarse desde rutas/servicios async para no bloquear el event loop de FastAPI.
+* **Trazabilidad en código:** `ingestion_service`, `weekly_service`, `rag_service`, `da_service`; verificación documental en [backend_audit_report.md](backend_audit_report.md) (sección resiliencia IA).
 
 ---
 

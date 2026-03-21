@@ -3,7 +3,7 @@
 **Estado:** Final y Definitiva (Ultra-Completa)  
 **Metodología:** Spec-Driven Development (SDD)  
 **Concepto Central:** *Trust Through Control* (Confianza a través del Control)  
-**Alineación:** Revisión R1–R6 / SDD 2025-03-21 · Detalle técnico: [technical-spec.md §4](technical-spec.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
+**Alineación:** Revisión R1–R6 / SDD 2026-03-21 · Spec técnica **v7.10**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
 
 ---
 
@@ -134,7 +134,7 @@ Los IDs **R1–R6** son la referencia canónica entre producto, spec técnica y 
 | **R5** | Escalamiento de firma (MFA) | El hash de firma del CEO debe exigir MFA cuando esté integrado. |
 | **R6** | Memoria post-DA (RAG) | Al cerrar el DA, el plan/resolución entra en la memoria consultable (RAG). |
 
-**Mantenimiento SDD:** cualquier cambio en R1–R6 se actualiza en [technical-spec.md §4](technical-spec.md) y en esta tabla en el mismo cambio (o PR).
+**Mantenimiento SDD:** cualquier cambio en R1–R6 se actualiza en [technical-spec.md §4](technical-spec.md) y en esta tabla en el mismo cambio (o PR). Cambios en política de IA o degradación: [technical-spec.md §3.F](technical-spec.md).
 
 ### 6.1 Narrativa (hard rules en lenguaje de producto)
 

@@ -16,7 +16,7 @@ Cualquier cambio de API debe actualizar **ambos**: la sección correspondiente d
 | 1 Ingestión | `ingestion.py` | `app/schemas/ingestion.py` |
 | 2 Findings | `findings.py` | `FindingStatusUpdateModel`, `FindingReadModel` en el mismo router |
 | 3 Weekly | `weekly.py` | `app/schemas/weekly.py` |
-| 4 RAG / Ask GRIP | `rag.py` | `app/schemas/rag.py` |
+| 4 RAG / Ask GRIP | **`chat.py`** (canónico UI: `POST /api/v1/chat`, JWT) y **`rag.py`** (alias: `POST /api/v1/query/ask-grip`; ver technical-spec §2 Módulo 4) | `app/schemas/rag.py` (`AskGripRequest`, `AskGripResponse`, `ChatRequest`) |
 | 5 DA | `da.py` | `app/schemas/da.py` |
 
 ## Reglas de negocio (R1–R6)
