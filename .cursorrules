@@ -32,6 +32,10 @@ Flujo obligatorio:
   - Si cambian reglas de negocio o contrato, actualiza los docs (spec de la feature y/o specs base) para mantener la base SDD coherente.
   - **Sincronía de versión:** al publicar cambios en contrato o R1–R6, actualiza `technical-spec.md`, `functional-spec.md` §6.0 si aplica, `api-contract-ssot.md` y **`backend_audit_report.md`**; **reconcilia** el número de versión del encabezado del audit con el campo **Versión** de `technical-spec.md`.
 
+### 2.1 Commits y remoto (responsabilidad exclusiva del usuario)
+- **No ejecutes `git commit`, `git push`, `git merge`, ni acciones equivalentes de forma proactiva.** Esa decisión es **exclusiva del usuario** salvo que lo pida **explícitamente** en el mensaje (por ejemplo: "haz commit", "commitea los cambios", "push al remoto").
+- Puedes editar archivos, crear ramas cuando el usuario lo pida, sugerir mensajes de commit y recordar el flujo de ramas descrito arriba; el **commit** (y el push) los realiza el usuario por defecto.
+
 ## 3. Arquitectura Frontend (Angular 17+ & Tailwind CSS)
 - **Standalone Components:** No uses `NgModules`. Usa la sintaxis moderna (ej. `@Component({ standalone: true, imports: [...] })`).
 - **Control Flow:** Usa la nueva sintaxis `@for` y `@if` en el HTML, no uses `*ngFor` ni `*ngIf`.
