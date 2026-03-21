@@ -15,7 +15,7 @@ Repositorio dedicado a **especificaciones**, **auditoría de contrato** y **regl
 
 ## Repos hermanos
 
-Coloca este clone **al mismo nivel** que `grip-backend` y `grip-frontend` (por ejemplo dentro de `weekly-app/`). Abre el workspace `../GRIP.code-workspace` en Cursor/VS Code para trabajar los tres a la vez.
+Coloca este clone **al mismo nivel** que `grip-backend` y `grip-frontend` (por ejemplo `weekly-app/grip-specs`, `weekly-app/grip-backend`, …). En Cursor/VS Code: **Abrir workspace desde archivo** → `grip-specs/GRIP.code-workspace` (usa rutas `../grip-backend` y `../grip-frontend`).
 
 ## Publicar en GitHub
 

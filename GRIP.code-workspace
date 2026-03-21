@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "name": "grip-specs (SSOT)",
+      "path": "."
+    },
+    {
+      "name": "grip-backend",
+      "path": "../grip-backend"
+    },
+    {
+      "name": "grip-frontend",
+      "path": "../grip-frontend"
+    }
+  ],
+  "settings": {}
+}
