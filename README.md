@@ -19,13 +19,11 @@ Coloca este clone **al mismo nivel** que `grip-backend` y `grip-frontend` (por e
 
 ## Publicar en GitHub
 
-```bash
-cd grip-specs
-git remote add origin https://github.com/<tu-usuario>/grip-specs.git
-git push -u origin main
-```
+Remoto publicado: [github.com/jvargas0324/grip-specs](https://github.com/jvargas0324/grip-specs) (rama `main`).
 
-(Ajusta `main`/`dev` según tu convención.)
+```bash
+git clone https://github.com/jvargas0324/grip-specs.git grip-specs
+```
 
 ## Flujo SDD
 
