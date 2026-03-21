@@ -12,6 +12,7 @@ Repositorio dedicado a **especificaciones**, **auditoría de contrato** y **regl
 | `specs/api-contract-ssot.md` | Mapa spec ↔ Pydantic en el repo `grip-backend`. |
 | `specs/backend_audit_report.md` | Trazabilidad implementación vs spec. |
 | `specs/features/` | Plantilla y specs por feature. |
+| `docs/` | Planes y notas de seguimiento (no contrato formal). |
 
 ## Repos hermanos
 
