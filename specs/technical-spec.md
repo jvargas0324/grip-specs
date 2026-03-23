@@ -1,8 +1,8 @@
 # 🛠 Technical Specification Master: Proyecto GRIP (Fase 1)
-**Versión:** 7.11 (UI: tema corporativo grip-frontend)
+**Versión:** 7.17 (M1 PDF async + M2 stores/options + SSOT contrato findings + users->zones)
 **Alcance:** Persistencia de datos, Contratos de API, Inteligencia de Extracción y Gobierno.
 **Arquitectura Core:** PostgreSQL (Relacional) + pgvector (Vectorial) + Python/FastAPI Backend + Front Angular
-**Alineación:** Revisión documental 2026-03-21 (v7.11 en sync con [backend_audit_report.md](backend_audit_report.md)) · Trazabilidad implementación: mismo informe (actualizar tras cambios de contrato o R*).
+**Alineación:** Revisión documental 2026-03-23 (v7.17 en sync documental con [backend_audit_report.md](backend_audit_report.md), incluyendo M2 findings paginados + `stores/options` desacoplado + contrato `GET /findings` sin `store_options` + relación territorial users->zones) · Trazabilidad implementación: mismo informe (actualizar tras cambios de contrato o R*).
 
 ---
 
@@ -20,6 +20,7 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     role ENUM('jz', 'gv', 'regional', 'coo', 'ceo') NOT NULL,
+    zone_id UUID REFERENCES zones(id), -- Usuario asignado a una zona (1 usuario -> 1 zona)
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -37,8 +38,7 @@ CREATE TABLE stores (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) UNIQUE NOT NULL, -- Ej: 'CACIQUE T002'
     name VARCHAR(255),
-    zone_id UUID REFERENCES zones(id), -- Referencia a la zona
-    gv_id UUID REFERENCES users(id) -- Gerente de Ventas asignado
+    zone_id UUID REFERENCES zones(id) -- Referencia a la zona de la tienda
 );
 
 -- Tabla de Visitas (Header del PDF)
@@ -51,10 +51,28 @@ CREATE TABLE visits (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Jobs de extracción para canal PDF asíncrono (M1)
+CREATE TABLE ingestion_jobs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    jz_id UUID REFERENCES users(id),
+    status ENUM('queued', 'processing', 'preview_ready', 'confirmed', 'failed') NOT NULL,
+    source_file_url TEXT NOT NULL, -- object storage (retención 1 año)
+    source_file_size_bytes INTEGER NOT NULL,
+    source_file_pages INTEGER NOT NULL,
+    extraction_result JSONB, -- header + raw_content + ai_output (preview)
+    extraction_warnings JSONB, -- advertencias de extracción parcial
+    missing_fields JSONB, -- campos faltantes detectados
+    confidence_score NUMERIC(5,4), -- trazabilidad de calidad de extracción
+    error_detail TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
 -- Tabla de Hallazgos (Cuerpo del PDF)
 CREATE TABLE findings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     visit_id UUID REFERENCES visits(id),
+    store_code VARCHAR(50), -- Denormalizado para filtro directo por tienda en dashboard
     category VARCHAR(100), -- Ej: 'Limpieza', 'Precios'
     control_point TEXT, -- Texto del ítem del checklist
     compliance BOOLEAN NOT NULL, -- Cumple / No Cumple
@@ -181,14 +199,114 @@ CREATE TABLE da_findings_map (
 
 ```
 
+**POST** `/api/v1/ingest/pdf`
+
+* **Purpose:** Canal adicional asíncrono para PDF digital (sin reemplazar `POST /api/v1/ingest`).
+* **Request (`multipart/form-data`):**
+  * `file`: PDF (máx 1MB, máx 2 páginas, texto digital).
+* **Nota V1:** no se aceptan campos multipart adicionales (p. ej. `store_code` de validación cruzada); queda explícitamente **fuera de alcance** hasta alinear contrato e implementación (ver spec de feature M1-PDF §6.1).
+* **Response (202):**
+```json
+{
+  "job_id": "UUID",
+  "status": "queued",
+  "limits": { "max_size_mb": 1, "max_pages": 2 }
+}
+```
+
+**GET** `/api/v1/ingest/pdf/{job_id}`
+
+* **Purpose:** Consultar estado y preview de extracción.
+* **Response (200):**
+```json
+{
+  "job_id": "UUID",
+  "status": "queued|processing|preview_ready|confirmed|failed",
+  "result": {
+    "header": { "store_code": "STRING", "jz_email": "STRING", "visit_date": "ISO8601_TIMESTAMP" },
+    "raw_content": [
+      { "category": "STRING", "item": "STRING", "status": "BOOLEAN", "comment": "STRING" }
+    ],
+    "ai_output": [
+      {
+        "summary": "STRING",
+        "severity_rank": "low|medium|high",
+        "suggested_action": "STRING",
+        "confidence": "FLOAT"
+      }
+    ],
+    "warnings": ["STRING"],
+    "missing_fields": ["STRING"]
+  }
+}
+```
+
+**POST** `/api/v1/ingest/pdf/{job_id}/confirm`
+
+* **Purpose:** Confirmar preview y persistir `visits` + `findings`.
+* **Payload (JSON):**
+```json
+{ "confirm": true }
+```
+* **Response (200):** `{ "status": "confirmed", "visit_id": "UUID", "findings_created": 0, "warnings": ["STRING"] }`
+* **Rule:** Si la extracción es incompleta, el sistema debe **guardar parcial + advertencias**.
+
 ### Módulo 2: Findings (Frontend API)
 
 **GET** `/api/v1/findings`
 
 * **Query Params (opcionales):**
+  * `page`: `INT` (default `1`, min `1`).
+  * `page_size`: `INT` (default `20`, rango `1..100`).
+  * `store_code`: `STRING` (filtro principal por tienda, coherente con dashboard zonal).
   * `store_id`: `UUID` (filtra por tienda; se resuelve vía `visits.store_id`).
   * `status`: `open | in_progress | verified | reopened`.
-* **Response (JSON):** Lista de hallazgos.
+  * `category`: `STRING`.
+  * `search`: `STRING` (búsqueda textual básica sobre categoría, punto de control, resumen IA, acción sugerida, severidad, observación y estado).
+  * `date_start`, `date_end`: `DATE` (filtro por `findings.created_at`).
+* **Response (JSON, paginada):**
+```json
+{
+  "items": [
+    {
+      "id": "UUID",
+      "visit_id": "UUID",
+      "store_code": "STRING|null",
+      "category": "STRING",
+      "control_point": "STRING",
+      "compliance": false,
+      "observation": "STRING",
+      "ai_summary": "STRING",
+      "suggested_action": "STRING",
+      "severity_rank": "low|medium|high|null",
+      "parent_finding_id": "UUID|null",
+      "status": "open|in_progress|verified|reopened",
+      "created_at": "ISO8601_TIMESTAMP"
+    }
+  ],
+  "total": 0,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1
+}
+```
+* **Orden:** `created_at desc`.
+* **Scope zonal:** para roles no-CEO, el backend filtra por `current_user.zone_id` **solo si** `zone_id` está definido (en desarrollo mock: header `X-User-Zone-Id`). Si falta, **no** se aplica filtro zonal (comportamiento heredado para pruebas; en producto los usuarios territoriales deben tener zona asignada).
+
+**GET** `/api/v1/stores/options`
+
+* **Purpose:** Endpoint dedicado para poblar el dropdown de tiendas sin depender del response de findings.
+* **Query Params (opcionales):**
+  * `search`: `STRING` (filtro por `stores.code` o `stores.name`).
+* **Response (JSON):**
+```json
+{
+  "items": [
+    { "store_code": "STRING", "store_name": "STRING|null" }
+  ]
+}
+```
+* **Scope zonal:** para roles no-CEO con `zone_id` definido, retorna solo tiendas de esa zona; para CEO retorna todas. Sin `zone_id` en rol no-CEO, no se aplica filtro zonal (igual que `GET /findings`).
 
 **PATCH** `/api/v1/findings/{id}/status`
 
@@ -214,7 +332,7 @@ CREATE TABLE da_findings_map (
 
 ### Módulo 4: RAG Query / Ask GRIP (Chat)
 
-* **Contrato canónico (producto / Angular):** **`POST /api/v1/chat`**. Es el path que usa el SPA (`ChatService` → base URL `/api/v1` + `/chat`). Requiere autenticación JWT vía `get_current_user` en `grip-backend/app/api/chat.py`.
+* **Contrato canónico (producto / Angular):** **`POST /api/v1/chat`**. Es el path que usa el SPA (`ChatService` → base URL `/api/v1` + `/chat`). En código actual `get_current_user` usa **headers mock** (`X-User-Id`, `X-User-Role`, …); la referencia a JWT describe el **objetivo** de hardening cuando exista auth real (ver audit §B WARNING ask-grip vs chat).
 
 **POST** `/api/v1/chat`
 
@@ -260,6 +378,8 @@ CREATE TABLE da_findings_map (
 
 * **Model:** `gemini-2.5-flash-lite`
 * **System Prompt:** "Eres un auditor experto en retail. Recibirás un hallazgo operativo. Tu tarea es: 1. Resumir la observación en máximo 10 palabras. 2. Asignar una severidad (Low/Medium/High) basándote en el riesgo de pérdida de dinero, seguridad física o daño de imagen. Devuelve solo JSON."
+* **Canal PDF async (v1):** para `POST /api/v1/ingest/pdf`, la IA extrae cabecera (`store_code`, `jz_email`, `visit_date`) y checklist (`category`, `item`, `status`, `comment`) y genera el mismo output esperado de M1 (`summary`, `severity_rank`, `suggested_action`) antes de fase de confirmación.
+* **Trazabilidad de extracción:** registrar `confidence_score`, `warnings` y `missing_fields` por job para auditoría de calidad (objetivo de feature: 95% en dataset objetivo).
 
 ### B. The Semantic Matcher (Módulo 2)
 
@@ -294,6 +414,7 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
 * **Excepciones tipadas:** Usar `GeminiAPIError` (base), `GeminiQuotaError` (cuota / rate limit) y `GeminiTimeoutError` (timeout) para fallos de la API de Google; el cliente las eleva tras mapear excepciones de `google.api_core`.
 * **Envolver llamadas:** Toda invocación a `generate_structured_text`, `generate_plain_text`, `generate_embedding` (o equivalentes async del cliente) en servicios debe ir en `try/except` capturando al menos `GeminiAPIError` y `GeminiQuotaError` donde aplique, o delegar en un manejador de ruta que las traduzca a HTTP (ej. ingestión: `app/api/ingestion.py`).
 * **No bloquear transacciones críticas:** Un fallo de IA no debe impedir persistir el resultado principal cuando el negocio lo exija. **Referencia:** cierre de DA (`da_service.close_da`): si el embedding R6 falla, se registra warning y el `commit` del cierre sigue ejecutándose.
+* **M1 PDF (degradación específica):** en extracción incompleta del PDF, persistir datos parciales tras confirmación del usuario y devolver advertencias explícitas (`warnings`) en la respuesta.
 * **Asincronía:** Las funciones que llaman al SDK de Gemini deben ser `async` y usarse desde rutas/servicios async para no bloquear el event loop de FastAPI.
 * **Trazabilidad en código:** `ingestion_service`, `weekly_service`, `rag_service`, `da_service`; verificación documental en [backend_audit_report.md](backend_audit_report.md) (sección resiliencia IA).
 
@@ -337,7 +458,7 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
   * `/ask-grip`: Ask GRIP (Chat). Asistente conversacional RAG para consultas en lenguaje natural sobre hallazgos y rendimiento de tiendas.
 
 * **Componentes:**
-  * `DashboardJzComponent` (`features/ingestion`): Debe cargar todos los hallazgos. Incluye client-side filtering por texto libre, estado, categoría y rango de fechas. La tabla debe incluir columnas de Fecha y Estado (con badges semánticos). Vista de Pre-Visita y acceso al formulario.
+  * `DashboardJzComponent` (`features/ingestion`): Lista hallazgos vía `GET /api/v1/findings` con **filtros y paginación server-side** (búsqueda, estado, categoría, fechas, `store_code`). Opciones del filtro de tienda se cargan con `GET /api/v1/stores/options` (desacoplado). La tabla incluye al menos Fecha, Estado (badges semánticos), **código de tienda** (`store_code`), categoría, punto de control, severidad, resumen IA y acciones. Vista de Pre-Visita y acceso al formulario.
   * `ResolveFindingModal` (o lógica integrada en el Dashboard): permite al usuario actualizar el estado de los hallazgos (verified, in_progress) con evidencia obligatoria para verified (Regla R1).
   * `ChecklistFormComponent` (`features/ingestion`): Formulario basado en **Reactive Forms** para capturar:
     * `store_code`
@@ -350,10 +471,11 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
 
 * **Servicios:**
   * `FindingsService` (`features/ingestion/services`):
-    * `getAllFindings()`: Recupera todos los hallazgos sin filtro de estado.
-    * `getOpenFindings(params)`: Recupera hallazgos con `status='open'` (legacy).
-    * `ingestChecklist(payload)`: Envía el formulario de ingesta al backend vía `POST /api/v1/ingest` conforme al contrato del Módulo 1.
-  * `updateFindingStatus(id, payload)`: Actualiza el estado de un hallazgo vía `PATCH /api/v1/findings/{id}/status`.
+    * `getFindings(params)`: `GET /api/v1/findings` paginado (params: `page`, `page_size`, `store_code`, `status`, `category`, `search`, `date_start`, `date_end`, etc.).
+    * `getAllFindings()` / `getOpenFindings()`: atajos legacy sobre `getFindings` con `page_size` amplio.
+    * `ingestChecklist(payload)`: `POST /api/v1/ingest` (Módulo 1).
+    * `updateFindingStatus(id, payload)`: `PATCH /api/v1/findings/{id}/status`.
+  * `StoresService` (`features/ingestion/services/stores.service.ts`): `getStoreOptions()` → `GET /api/v1/stores/options` para el dropdown de tiendas del dashboard.
 
 * **Regla de UI (R1):** El formulario de resolución debe invalidarse si `status === 'verified'` y `evidence_link` está vacío; el botón de envío debe permanecer deshabilitado en ese caso.
 * **Lógica del Modal de Resolución:** Tras una actualización exitosa, el modal debe cerrarse, el formulario debe resetearse y la tabla debe recargar los datos automáticamente.

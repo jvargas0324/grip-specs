@@ -3,7 +3,7 @@
 **Estado:** Final y Definitiva (Ultra-Completa)  
 **Metodología:** Spec-Driven Development (SDD)  
 **Concepto Central:** *Trust Through Control* (Confianza a través del Control)  
-**Alineación:** Revisión R1–R6 / SDD 2026-03-21 · Spec técnica **v7.11**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
+**Alineación:** Revisión R1–R6 / SDD 2026-03-23 · Spec técnica **v7.17**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) y canal M1 PDF async en [features/ingestion-pdf-ai-v1.md](features/ingestion-pdf-ai-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
 
 ---
 
@@ -18,6 +18,8 @@ GRIP establece una cadena de mando digital donde la información fluye sin filtr
 | **2** | **Gerente de Ventas** | Weekly Zonal y Focal Points. | Resumen ejecutivo de hallazgos críticos. |
 | **1** | **Jefe de Zona (JZ)** | Ejecución de Checklist e Ingestión. | Extracción y clasificación técnica de datos de campo. |
 
+Regla territorial de asignación: cada usuario operativo/gerencial se asigna a una única zona (`users.zone_id`) y la visibilidad de dashboards/reportes se deriva de esa zona, salvo bypass explícito de CEO.
+
 ---
 
 ## 2. Definición Funcional de Módulos y Lógica de Inteligencia Artificial
@@ -25,8 +27,8 @@ GRIP establece una cadena de mando digital donde la información fluye sin filtr
 Esta sección describe la función de cada módulo y detalla exactamente cómo la IA asiste al criterio ejecutivo en cada punto de contacto.
 
 ### 2.1. Módulo 1: Ingestión y Clasificación (The Data Factory / The Extractor)
-* **Función:** Procesar el Checklist (PDF/Excel) cargado por el Jefe de Zona.
-* **Input IA:** Texto crudo extraído de las celdas "Anotaciones" del PDF/Excel y el estado (Cumple/No Cumple).
+* **Función:** Procesar el Checklist cargado por el Jefe de Zona por dos canales: (a) formulario estructurado actual y (b) PDF digital asíncrono (nuevo canal paralelo).
+* **Input IA:** Texto crudo extraído del formulario o del PDF digital y el estado (Cumple/No Cumple) por ítem.
 * **Interfaz de Usuario (Formulario de Ingesta - JZ):**
     * **Datos de cabecera obligatorios:**
         * `Código de tienda` (selector o campo de texto validado contra el catálogo de tiendas).
@@ -39,16 +41,26 @@ Esta sección describe la función de cada módulo y detalla exactamente cómo l
         * `Comentarios` (campo de texto libre donde el JZ describe el hallazgo).
 * **Regla de UX del Formulario de Ingesta:**
     * Al **enviar el formulario exitosamente**, el usuario JZ **debe ser redirigido automáticamente al Dashboard Principal** (pantalla de resumen generado por la IA) para visualizar inmediatamente el resultado de la ingesta (hallazgos clasificados y resúmenes).
+* **Regla de UX del canal PDF (async):**
+    * El JZ sube un PDF digital (máx. 1MB, máx. 2 páginas).
+    * El sistema ejecuta extracción IA asíncrona y expone un **preview obligatorio** antes de persistir.
+    * En V1, el preview es **solo lectura** (sin edición manual).
+    * Al confirmar, se persisten visita + hallazgos y se redirige al Dashboard Principal.
+    * Si la extracción es incompleta, el sistema guarda parcial y muestra advertencias explícitas.
 * **Lógica de Procesamiento IA:**
     * **Normalización:** Convierte lenguaje informal en categorías estandarizadas (ej: mapea "piso manchado" a la categoría "Limpieza").
     * **Detección de Entidades:** Identifica objetos específicos afectados (ej: "Maizena", "Fachada", "Cajas").
     * **Análisis de Gravedad:** Clasifica el hallazgo en *Baja, Media o Alta* severidad basado en palabras clave de riesgo operativo (seguridad, dinero, imagen legal).
 * **Output IA:** Un objeto estructurado con: `Categoría`, `Severidad`, `Resumen Ejecutivo del Hallazgo` y `Accionable Sugerido`.
+* **Calidad esperada (canal PDF V1):** objetivo mínimo de extracción de 95% en dataset objetivo definido por negocio.
 
 ### 2.2. Módulo 2: Motor de Reincidencias y Follow-Up (The Guardian / The Matcher)
 * **Función:** Asegurar el cierre de tareas operativas requiriendo siempre evidencia obligatoria.
 * **Interfaz de Usuario (Follow-up):** El usuario podrá interactuar con los hallazgos desde el Dashboard para cambiar su estado mediante un botón "Resolver" por cada hallazgo. Al seleccionar "Resolver", se abre un modal para actualizar el estado (in_progress, verified) y adjuntar evidencia si se marca como verified.
 * **Capacidades del Dashboard JZ:** Visualización del historial completo de hallazgos, búsqueda en tiempo real, filtros combinados y códigos de color por estado.
+* **Performance del Dashboard JZ:** La búsqueda, filtros y paginación de `findings` se resuelven server-side (API paginada) para reducir latencia percibida y costo de render en cliente.
+* **Filtro de tienda zonal (desacoplado):** El dashboard carga primero las opciones de tienda desde `GET /api/v1/stores/options` (limitado por zona cuando el usuario no es CEO y envía `X-User-Zone-Id` / `zone_id` en el contexto de auth), y luego aplica la selección de tienda como filtro (`store_code`) sobre `GET /api/v1/findings`.
+* **Alcance zonal sin zona en el contexto:** Si un rol no-CEO no tiene `zone_id` en el contexto de usuario, el backend **no** aplica filtro por zona (útil en pruebas; en operación real el usuario territorial debe tener zona asignada y el cliente debe enviarla, p. ej. vía mock o futuro login).
 * **Regla de negocio visual:** Añadir evidencia es OBLIGATORIO para marcar un hallazgo como resuelto ('verified'), pero es OPCIONAL si el usuario solo quiere actualizar el estado a 'in_progress'.
 * **Input IA:** Hallazgo actual vs. Histórico de hallazgos de la misma tienda (`punto_control`).
 * **Lógica de Procesamiento IA:**
