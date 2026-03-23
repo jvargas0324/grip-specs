@@ -138,6 +138,7 @@
 ## 7. Cambios en UI (frontend)
 
 - En flujo de M1, añadir opción de carga de PDF.
+- **Formulario estructurado M1 (`ChecklistFormComponent`):** **pestañas** que separan **Checklist manual** (hallazgo a hallazgo, `POST /api/v1/ingest`) y **PDF async** (upload + preview + confirm); **cabecera de visita compartida** sobre las pestañas. El **email del JZ** se toma de la sesión (`AuthService`), sin campo editable. El **código de tienda** es un combobox con `GET /api/v1/stores/options` y búsqueda con filtrado a partir del **tercer carácter**. Ver [technical-spec.md](../technical-spec.md) §6.
 - Mostrar progreso/estado del job asíncrono.
 - Mostrar preview extraído (solo lectura) con advertencias de extracción.
 - Confirmar persistencia final desde preview.
@@ -152,6 +153,7 @@
 5. **Dado** un usuario distinto de `jefe_zona`, **cuando** intenta usar el canal PDF, **entonces** recibe denegación por permisos.
 6. **Calidad objetivo V1:** exactitud mínima de extracción del 95% en el dataset objetivo de validación definido por negocio.
 7. **Caso mínimo obligatorio:** happy path end-to-end.
+8. **Dado** un JZ en el formulario M1, **cuando** visualiza la cabecera, **entonces** el email del JZ refleja la sesión (no es editable) y el código de tienda se elige de un listado zonal con búsqueda que refina a partir del tercer carácter.
 
 ## 9. Notas
 

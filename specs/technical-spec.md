@@ -1,8 +1,8 @@
 # 🛠 Technical Specification Master: Proyecto GRIP (Fase 1)
-**Versión:** 7.17 (M1 PDF async + M2 stores/options + SSOT contrato findings + users->zones)
+**Versión:** 7.19 (M1 formulario ingesta: pestañas checklist manual vs PDF + cabecera compartida)
 **Alcance:** Persistencia de datos, Contratos de API, Inteligencia de Extracción y Gobierno.
 **Arquitectura Core:** PostgreSQL (Relacional) + pgvector (Vectorial) + Python/FastAPI Backend + Front Angular
-**Alineación:** Revisión documental 2026-03-23 (v7.17 en sync documental con [backend_audit_report.md](backend_audit_report.md), incluyendo M2 findings paginados + `stores/options` desacoplado + contrato `GET /findings` sin `store_options` + relación territorial users->zones) · Trazabilidad implementación: mismo informe (actualizar tras cambios de contrato o R*).
+**Alineación:** Revisión documental 2026-03-23 (v7.19: UX M1 — pestañas **Checklist manual** vs **PDF async** en `ChecklistFormComponent`, cabecera de visita compartida; sin cambio de contrato API). v7.18: email JZ sesión + combobox tienda zonal (búsqueda ≥3 chars). v7.17: M2 findings + `stores/options` + `GET /findings` sin `store_options` + users->zones. Trazabilidad: [backend_audit_report.md](backend_audit_report.md).
 
 ---
 
@@ -460,14 +460,11 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
 * **Componentes:**
   * `DashboardJzComponent` (`features/ingestion`): Lista hallazgos vía `GET /api/v1/findings` con **filtros y paginación server-side** (búsqueda, estado, categoría, fechas, `store_code`). Opciones del filtro de tienda se cargan con `GET /api/v1/stores/options` (desacoplado). La tabla incluye al menos Fecha, Estado (badges semánticos), **código de tienda** (`store_code`), categoría, punto de control, severidad, resumen IA y acciones. Vista de Pre-Visita y acceso al formulario.
   * `ResolveFindingModal` (o lógica integrada en el Dashboard): permite al usuario actualizar el estado de los hallazgos (verified, in_progress) con evidencia obligatoria para verified (Regla R1).
-  * `ChecklistFormComponent` (`features/ingestion`): Formulario basado en **Reactive Forms** para capturar:
-    * `store_code`
-    * `jz_email`
+  * `ChecklistFormComponent` (`features/ingestion`): Formulario basado en **Reactive Forms** con **cabecera de visita compartida** (tienda, email sesión, fecha) y **dos pestañas** que separan el canal JSON del canal PDF: (1) **Checklist manual** — hallazgo ítem a ítem + envío `POST /api/v1/ingest` (Cancelar / Enviar); (2) **PDF async** — upload, estado, preview y confirmación (sin usar el submit del formulario JSON). Campos de cabecera:
+    * `store_code` (combobox: lista de tiendas de la zona del usuario vía `StoresService.getStoreOptions()`; búsqueda en panel con **filtrado a partir del 3.er carácter** sobre código o nombre, manteniendo la lista completa si el término tiene menos de 3 caracteres).
+    * `jz_email`: **no editable**; se envía en el payload de `POST /api/v1/ingest` con el **email de la sesión** (`AuthService.getCurrentUser().email`), no como campo de entrada manual.
     * `visit_date`
-    * `category`
-    * `item` (ítem evaluado del checklist)
-    * `status` (Cumple / No Cumple)
-    * `comment` (comentarios del JZ)
+    * En la pestaña manual: `category`, `item`, `status` (Cumple / No Cumple), `comment` (comentarios del JZ)
 
 * **Servicios:**
   * `FindingsService` (`features/ingestion/services`):
@@ -475,7 +472,7 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
     * `getAllFindings()` / `getOpenFindings()`: atajos legacy sobre `getFindings` con `page_size` amplio.
     * `ingestChecklist(payload)`: `POST /api/v1/ingest` (Módulo 1).
     * `updateFindingStatus(id, payload)`: `PATCH /api/v1/findings/{id}/status`.
-  * `StoresService` (`features/ingestion/services/stores.service.ts`): `getStoreOptions()` → `GET /api/v1/stores/options` para el dropdown de tiendas del dashboard.
+  * `StoresService` (`features/ingestion/services/stores.service.ts`): `getStoreOptions(search?)` → `GET /api/v1/stores/options` (query opcional `search`) para el filtro de tiendas del **dashboard** y para poblar el **selector de tienda del formulario de ingesta** (carga inicial sin `search` = catálogo de la zona; refinamiento en cliente con umbral de 3 caracteres según §6).
 
 * **Regla de UI (R1):** El formulario de resolución debe invalidarse si `status === 'verified'` y `evidence_link` está vacío; el botón de envío debe permanecer deshabilitado en ese caso.
 * **Lógica del Modal de Resolución:** Tras una actualización exitosa, el modal debe cerrarse, el formulario debe resetearse y la tabla debe recargar los datos automáticamente.

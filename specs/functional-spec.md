@@ -3,7 +3,7 @@
 **Estado:** Final y Definitiva (Ultra-Completa)  
 **Metodología:** Spec-Driven Development (SDD)  
 **Concepto Central:** *Trust Through Control* (Confianza a través del Control)  
-**Alineación:** Revisión R1–R6 / SDD 2026-03-23 · Spec técnica **v7.17**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) y canal M1 PDF async en [features/ingestion-pdf-ai-v1.md](features/ingestion-pdf-ai-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
+**Alineación:** Revisión R1–R6 / SDD 2026-03-23 · Spec técnica **v7.19**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) y canal M1 PDF async en [features/ingestion-pdf-ai-v1.md](features/ingestion-pdf-ai-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
 
 ---
 
@@ -30,9 +30,10 @@ Esta sección describe la función de cada módulo y detalla exactamente cómo l
 * **Función:** Procesar el Checklist cargado por el Jefe de Zona por dos canales: (a) formulario estructurado actual y (b) PDF digital asíncrono (nuevo canal paralelo).
 * **Input IA:** Texto crudo extraído del formulario o del PDF digital y el estado (Cumple/No Cumple) por ítem.
 * **Interfaz de Usuario (Formulario de Ingesta - JZ):**
+    * **Navegación por pestañas:** la pantalla distingue **Checklist manual** (hallazgos uno a uno + envío JSON) y **Carga por PDF** (canal async con preview); la **cabecera de visita** (tienda, email de sesión, fecha) permanece visible encima de las pestañas.
     * **Datos de cabecera obligatorios:**
-        * `Código de tienda` (selector o campo de texto validado contra el catálogo de tiendas).
-        * `Email del JZ` (correo corporativo del Jefe de Zona).
+        * `Código de tienda` (selector tipo combobox sobre el catálogo de tiendas **de la zona asignada al usuario**, con búsqueda: a partir del **tercer carácter** se refina el listado por código o nombre; con menos de tres caracteres se muestra el catálogo completo de la zona).
+        * `Email del JZ` (**inferido de la identidad autenticada** / sesión; no se captura manualmente en el formulario).
         * `Fecha de visita` (selector de fecha; debe corresponder a la visita en curso).
     * **Datos del hallazgo (Checklist) por cada ítem evaluado:**
         * `Categoría` (ej.: Limpieza, Precios, Seguridad).

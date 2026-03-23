@@ -1,9 +1,9 @@
 # Backend Audit Report — GRIP API
 
-**Spec de referencia:** Technical Spec **v7.17** (M1 PDF async + M2 findings paginados + stores/options + SSOT contrato findings + users->zones)  
+**Spec de referencia:** Technical Spec **v7.19** (v7.18 + UX M1: pestañas checklist manual vs PDF en `ChecklistFormComponent`; sin cambio de contrato API backend)  
 **Functional Spec:** Especificación funcional maestra (Fase 1), índice R1–R6 en §6.0  
 **Alcance:** Código en `grip-backend/app` (config, core, db/models, schemas, api, services).  
-**Última actualización de este informe:** 2026-03-23 (coherencia SDD: api-contract `GET /findings` sin `store_options`, audit `stores` router + migración `findings.store_code`, feature PDF multipart aclarada, scope zonal documentado).
+**Última actualización de este informe:** 2026-03-23 (v7.19: alineación documental con pestañas de ingesta M1 en frontend; cambio solo UI.)
 
 ---
 
