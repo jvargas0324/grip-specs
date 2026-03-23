@@ -35,6 +35,7 @@ Notas de contrato para el canal PDF:
 - Entrada: `multipart/form-data` con PDF de texto digital (máx 1MB, máx 2 páginas).
 - Estados de job: `queued | processing | preview_ready | confirmed | failed`.
 - Resiliencia: extracción incompleta => persistencia parcial + `warnings` explícitos.
+- **`GET /api/v1/ingest/pdf/{job_id}` — modelo `IngestionPdfJobStatusResponse` en `app/schemas/ingestion_pdf.py`:** incluye `error_code` (`ai_quota` \| `ai_unavailable` \| `processing_failed` \| `null`) y `error_detail` (mensaje UI en español cuando `status === failed`; nunca texto crudo de proveedor). Columna persistida: `ingestion_jobs.error_code` (Alembic); `error_detail` en BD almacena el mismo mensaje seguro.
 
 ## Reglas de negocio (R1–R6)
 

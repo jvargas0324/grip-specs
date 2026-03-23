@@ -1,9 +1,9 @@
 # Backend Audit Report — GRIP API
 
-**Spec de referencia:** Technical Spec **v7.19** (v7.18 + UX M1: pestañas checklist manual vs PDF en `ChecklistFormComponent`; sin cambio de contrato API backend)  
+**Spec de referencia:** Technical Spec **v7.20** (canal PDF async: `ingestion_jobs.error_code` + respuesta `GET /ingest/pdf/{job_id}` con mensajes de fallo seguros para UI; technical-spec §3.F)  
 **Functional Spec:** Especificación funcional maestra (Fase 1), índice R1–R6 en §6.0  
 **Alcance:** Código en `grip-backend/app` (config, core, db/models, schemas, api, services).  
-**Última actualización de este informe:** 2026-03-23 (v7.19: alineación documental con pestañas de ingesta M1 en frontend; cambio solo UI.)
+**Última actualización de este informe:** 2026-03-23 (v7.20: M1-PDF errores enmascarados + contrato ampliado; feature [ingestion-pdf-ai-v1.md](features/ingestion-pdf-ai-v1.md).)
 
 ---
 
@@ -11,7 +11,7 @@
 
 | Resultado | Cantidad |
 |-----------|----------|
-| 🟢 PASS   | 46       |
+| 🟢 PASS   | 48       |
 | 🟡 WARNING| 2        |
 | 🔴 FAIL   | 0        |
 
@@ -29,6 +29,7 @@
 | Índices de performance para dashboard findings | 🟢 PASS | Migración `alembic/versions/0006_add_findings_performance_indexes.py` agrega índices para `findings(created_at desc/status/visit_id/category/status+created_at)` y `visits(store_id)` alineados a consultas paginadas del dashboard JZ. |
 | Relación territorial users->zones (sin stores.gv_id) | 🟢 PASS | Migración `alembic/versions/0007_users_zone_scope.py` elimina `stores.gv_id` y agrega `users.zone_id` con FK a `zones` e índice de soporte. Modelos `users.py` y `stores.py` alineados. |
 | Columna `store_code` en `findings` + índice | 🟢 PASS | Modelo `app/db/models/findings.py`; migración `alembic/versions/0008_add_findings_store_code.py` (columna, backfill vía `visits→stores`, índice `ix_findings_store_code`). Ingesta JSON/PDF persiste `store_code`. |
+| Columna `error_code` en `ingestion_jobs` (PDF async) | 🟢 PASS | Modelo `app/db/models/ingestion_jobs.py`; migración `alembic/versions/0009_ingestion_jobs_error_code.py` (nullable `VARCHAR(32)`). |
 
 ---
 
@@ -39,7 +40,7 @@
 | POST /api/v1/ingest — payload (header + raw_content) | 🟢 PASS | `app/schemas/ingestion.py`: IngestRequest con IngestHeader (store_code, jz_email, visit_date) y raw_content (list IngestItem con category, item, status, comment). |
 | POST /api/v1/ingest — respuesta (visit_id, findings con summary/suggested_action) | 🟢 PASS | IngestResponse con visit_id y findings (IngestFindingSummary con summary, suggested_action). Router en `app/api/ingestion.py`. |
 | POST /api/v1/ingest/pdf — creación de job async | 🟢 PASS | `app/api/ingestion.py` agrega endpoint async y respuesta con `job_id/status/limits`; esquema en `app/schemas/ingestion_pdf.py`. |
-| GET /api/v1/ingest/pdf/{job_id} — estado/preview | 🟢 PASS | Implementado en `app/api/ingestion.py`; expone estado y preview serializado desde `ingestion_jobs.extraction_result`. |
+| GET /api/v1/ingest/pdf/{job_id} — estado/preview + fallos seguros | 🟢 PASS | `app/api/ingestion.py` + `IngestionPdfJobStatusResponse`: `error_code` (`ai_quota` \| `ai_unavailable` \| `processing_failed`) y `error_detail` (mensaje UI en español); `result` null si `failed`. |
 | POST /api/v1/ingest/pdf/{job_id}/confirm — persistencia final | 🟢 PASS | Implementado en `app/api/ingestion.py` + `app/services/ingestion_pdf_service.py`; persiste visita/hallazgos desde snapshot de preview (sin recálculo IA) y retorna warnings. |
 | GET /api/v1/weekly/summary — query region_id, week_number | 🟢 PASS | `app/api/weekly.py`: parámetros opcionales region_id, week_number. |
 | GET /api/v1/weekly/summary — respuesta (compliance_chart, top_high_findings, focal_points, executive_brief) | 🟢 PASS | WeeklySummaryResponse en `app/schemas/weekly.py` con esos campos. |
@@ -86,6 +87,7 @@ Normativa documentada en [technical-spec.md §3.F](technical-spec.md) (resilienc
 | RAG (M4): frase literal riesgo sistémico en system prompt | 🟢 PASS | `app/services/rag_service.py`: RAG_SYSTEM_PROMPT. |
 | Ingestion: Gemini para extracción + embedding real (sin mocks) | 🟢 PASS | `process_ingestion` usa `generate_structured_text` y `generate_embedding`; fallos propagados al router. |
 | Ingestion PDF async: extracción IA de header/checklist + trazabilidad (`confidence`, `warnings`) | 🟢 PASS | `app/services/ingestion_pdf_service.py` construye preview y persiste `confidence_score`, `warnings`, `missing_fields` en `ingestion_jobs`. |
+| Ingestion PDF async: fallos IA — log técnico + `error_code` / `error_detail` seguros (§3.F) | 🟢 PASS | `_run_pdf_extraction_job`: mapea `GeminiQuotaError` / `GeminiAPIError` / genérico; no persiste `str(exc)` del proveedor como `error_detail`; `process_ingestion` envuelto para mismos códigos. |
 | Ingestion PDF async: optimización de costo (preview=confirm) | 🟢 PASS | `confirm_pdf_job` reutiliza snapshot `preview_ready` para persistir, evitando una segunda ronda de llamadas Gemini durante confirmación. |
 | Ingestion PDF async: almacenamiento de original en object storage (retención 1 año) | 🟢 PASS | `app/core/object_storage.py` + `ingestion_pdf_service.py` almacenan PDF fuente y guardan `retention_until` (365 días). |
 | Ingestion PDF async: control de rol `jefe_zona` en upload/confirm | 🟢 PASS | Endpoints M1-PDF usan `Depends(require_role(['jz']))` en `app/api/ingestion.py`. |
@@ -112,4 +114,4 @@ Normativa documentada en [technical-spec.md §3.F](technical-spec.md) (resilienc
 
 ---
 
-*Fin del reporte. Alineado con Technical Spec v7.17 y revisión SDD 2026-03-23 (M1-PDF + performance M2 + store_code + stores/options + users->zones + reconciliación contrato SSOT).*
+*Fin del reporte. Alineado con Technical Spec v7.20 y revisión SDD 2026-03-23 (M1-PDF errores UI + `error_code` + reconciliación contrato SSOT).*

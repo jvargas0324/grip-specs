@@ -3,7 +3,7 @@
 **Estado:** Final y Definitiva (Ultra-Completa)  
 **Metodología:** Spec-Driven Development (SDD)  
 **Concepto Central:** *Trust Through Control* (Confianza a través del Control)  
-**Alineación:** Revisión R1–R6 / SDD 2026-03-23 · Spec técnica **v7.19**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) y canal M1 PDF async en [features/ingestion-pdf-ai-v1.md](features/ingestion-pdf-ai-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
+**Alineación:** Revisión R1–R6 / SDD 2026-03-23 · Spec técnica **v7.20**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) y canal M1 PDF async en [features/ingestion-pdf-ai-v1.md](features/ingestion-pdf-ai-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)
 
 ---
 
@@ -30,7 +30,7 @@ Esta sección describe la función de cada módulo y detalla exactamente cómo l
 * **Función:** Procesar el Checklist cargado por el Jefe de Zona por dos canales: (a) formulario estructurado actual y (b) PDF digital asíncrono (nuevo canal paralelo).
 * **Input IA:** Texto crudo extraído del formulario o del PDF digital y el estado (Cumple/No Cumple) por ítem.
 * **Interfaz de Usuario (Formulario de Ingesta - JZ):**
-    * **Navegación por pestañas:** la pantalla distingue **Checklist manual** (hallazgos uno a uno + envío JSON) y **Carga por PDF** (canal async con preview); la **cabecera de visita** (tienda, email de sesión, fecha) permanece visible encima de las pestañas.
+    * **Navegación por pestañas:** la pantalla distingue **Checklist manual** (hallazgos uno a uno + envío JSON) y **Carga por PDF** (canal async con preview); la **cabecera de visita** (tienda, fecha) permanece visible encima de las pestañas; el email del JZ no se muestra como campo pero se infiere de la sesión al enviar el checklist manual.
     * **Datos de cabecera obligatorios:**
         * `Código de tienda` (selector tipo combobox sobre el catálogo de tiendas **de la zona asignada al usuario**, con búsqueda: a partir del **tercer carácter** se refina el listado por código o nombre; con menos de tres caracteres se muestra el catálogo completo de la zona).
         * `Email del JZ` (**inferido de la identidad autenticada** / sesión; no se captura manualmente en el formulario).
@@ -45,6 +45,7 @@ Esta sección describe la función de cada módulo y detalla exactamente cómo l
 * **Regla de UX del canal PDF (async):**
     * El JZ sube un PDF digital (máx. 1MB, máx. 2 páginas).
     * El sistema ejecuta extracción IA asíncrona y expone un **preview obligatorio** antes de persistir.
+    * Durante el procesamiento, la UI comunica **progreso** en lenguaje claro (fases perceptibles: subida, en cola, análisis), sin depender solo de etiquetas técnicas de estado; mensajes de error **comprensibles** (sin jerga de infraestructura o nombre de proveedor IA); ante límites o indisponibilidad del análisis automático, sugerir explícitamente el **checklist manual** como alternativa.
     * En V1, el preview es **solo lectura** (sin edición manual).
     * Al confirmar, se persisten visita + hallazgos y se redirige al Dashboard Principal.
     * Si la extracción es incompleta, el sistema guarda parcial y muestra advertencias explícitas.

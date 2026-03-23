@@ -1,8 +1,8 @@
 # 🛠 Technical Specification Master: Proyecto GRIP (Fase 1)
-**Versión:** 7.19 (M1 formulario ingesta: pestañas checklist manual vs PDF + cabecera compartida)
+**Versión:** 7.20 (M1 canal PDF async: `error_code` + mensajes de fallo seguros en `GET /ingest/pdf/{job_id}`; columna `ingestion_jobs.error_code`)
 **Alcance:** Persistencia de datos, Contratos de API, Inteligencia de Extracción y Gobierno.
 **Arquitectura Core:** PostgreSQL (Relacional) + pgvector (Vectorial) + Python/FastAPI Backend + Front Angular
-**Alineación:** Revisión documental 2026-03-23 (v7.19: UX M1 — pestañas **Checklist manual** vs **PDF async** en `ChecklistFormComponent`, cabecera de visita compartida; sin cambio de contrato API). v7.18: email JZ sesión + combobox tienda zonal (búsqueda ≥3 chars). v7.17: M2 findings + `stores/options` + `GET /findings` sin `store_options` + users->zones. Trazabilidad: [backend_audit_report.md](backend_audit_report.md).
+**Alineación:** Revisión documental 2026-03-23 (v7.20: contrato PDF job — `error_code` estable y `error_detail` solo texto UI; logs conservan detalle técnico. v7.19: pestañas checklist manual vs PDF. v7.18: email JZ sesión + combobox tienda. Trazabilidad: [backend_audit_report.md](backend_audit_report.md).
 
 ---
 
@@ -63,7 +63,8 @@ CREATE TABLE ingestion_jobs (
     extraction_warnings JSONB, -- advertencias de extracción parcial
     missing_fields JSONB, -- campos faltantes detectados
     confidence_score NUMERIC(5,4), -- trazabilidad de calidad de extracción
-    error_detail TEXT,
+    error_code VARCHAR(32), -- ai_quota | ai_unavailable | processing_failed (null si OK)
+    error_detail TEXT, -- mensaje seguro para UI cuando status = failed (no trazas proveedor)
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -217,11 +218,16 @@ CREATE TABLE da_findings_map (
 **GET** `/api/v1/ingest/pdf/{job_id}`
 
 * **Purpose:** Consultar estado y preview de extracción.
+* **Campos de error (siempre presentes en el JSON; valores nulos si no aplica):**
+  * `error_code`: `ai_quota` | `ai_unavailable` | `processing_failed` | `null`.
+  * `error_detail`: texto en español apto para mostrar al usuario si `status === "failed"`; **no** exponer mensajes crudos del proveedor IA. Detalle técnico solo en logs del servidor.
 * **Response (200):**
 ```json
 {
   "job_id": "UUID",
   "status": "queued|processing|preview_ready|confirmed|failed",
+  "error_code": null,
+  "error_detail": null,
   "result": {
     "header": { "store_code": "STRING", "jz_email": "STRING", "visit_date": "ISO8601_TIMESTAMP" },
     "raw_content": [
@@ -240,6 +246,8 @@ CREATE TABLE da_findings_map (
   }
 }
 ```
+
+* **Nota:** Con `status: "failed"`, `result` es `null` y `error_code` / `error_detail` describen el fallo de forma segura.
 
 **POST** `/api/v1/ingest/pdf/{job_id}/confirm`
 
@@ -415,6 +423,7 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
 * **Envolver llamadas:** Toda invocación a `generate_structured_text`, `generate_plain_text`, `generate_embedding` (o equivalentes async del cliente) en servicios debe ir en `try/except` capturando al menos `GeminiAPIError` y `GeminiQuotaError` donde aplique, o delegar en un manejador de ruta que las traduzca a HTTP (ej. ingestión: `app/api/ingestion.py`).
 * **No bloquear transacciones críticas:** Un fallo de IA no debe impedir persistir el resultado principal cuando el negocio lo exija. **Referencia:** cierre de DA (`da_service.close_da`): si el embedding R6 falla, se registra warning y el `commit` del cierre sigue ejecutándose.
 * **M1 PDF (degradación específica):** en extracción incompleta del PDF, persistir datos parciales tras confirmación del usuario y devolver advertencias explícitas (`warnings`) en la respuesta.
+* **M1 PDF (jobs async — fallos IA):** ante error en el worker de extracción, persistir `status=failed`, `error_code` estable y `error_detail` con mensaje legible para UI; registrar la excepción completa solo en logs. El `GET /api/v1/ingest/pdf/{job_id}` expone al cliente solo esos valores saneados (no propagar `str(exc)` del proveedor IA como `error_detail`).
 * **Asincronía:** Las funciones que llaman al SDK de Gemini deben ser `async` y usarse desde rutas/servicios async para no bloquear el event loop de FastAPI.
 * **Trazabilidad en código:** `ingestion_service`, `weekly_service`, `rag_service`, `da_service`; verificación documental en [backend_audit_report.md](backend_audit_report.md) (sección resiliencia IA).
 
