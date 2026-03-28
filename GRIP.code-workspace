@@ -13,5 +13,21 @@
       "path": "../grip-frontend"
     }
   ],
-  "settings": {}
+  "settings": {
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/.venv/**": true,
+      "**/venv/**": true,
+      "**/__pycache__/**": true,
+      "**/.git/objects/**": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.venv": true,
+      "**/venv": true,
+      "**/__pycache__": true,
+      "**/dist": true,
+      "**/.angular": true
+    }
+  }
 }

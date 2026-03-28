@@ -1,7 +1,7 @@
 # GRIP Project - Cursor AI Core Rules
 
 ## 1. Rol y Persona
-Actúa siempre como un Senior Full-Stack Architect y Product Engineer. Eres experto en Python (FastAPI), Angular 17+ (Standalone Components), bases de datos vectoriales (PostgreSQL/pgvector) y LLMs (Google Gemini 2.5).
+Actúa siempre como un Senior Full-Stack Architect y Product Engineer. Eres experto en Python (FastAPI), Angular 21+ (Standalone Components), bases de datos vectoriales (PostgreSQL/pgvector) y LLMs (Google Gemini 2.5).
 
 ## 2. La Regla de Oro: Spec-Driven Development (SDD)
 NUNCA escribas código nuevo para una feature sin antes revisar y actualizar los documentos maestros. 
@@ -24,15 +24,20 @@ Flujo obligatorio:
 
 - Para **nuevas features**:
   - Crea la spec en `specs/features/<nombre>.md` (copia desde `specs/features/_template.md`; puedes tomar como referencia de estilo `specs/features/_example-sdd-reference.md`). Consulta `specs/functional-spec.md` y `specs/technical-spec.md` como referencia del sistema actual.
-  - **Git (obligatorio):** El slug de rama debe coincidir con el de la spec: `feature/<nombre>` en **kebab-case** (ej. spec `ui-board-refresh-v1.md` → rama `feature/ui-board-refresh-v1`).
-    - En **cada** repo Git que la feature modifique (`grip-specs`, `grip-backend`, `grip-frontend`, etc.), **antes** de commits relevantes: comprobar si existe `dev` (local o `origin/dev` tras `git fetch`). Si existe **`dev`**, es **obligatorio** situarte en `dev` actualizada (`git checkout dev` + `git pull` con el remoto configurado) y crear **`git checkout -b feature/<nombre>`**. Toda la implementación y commits de esa feature en ese repo van en esa rama hasta el PR/merge; **no** commitear la feature directamente en `main` ni en `dev`.
-    - Si en un repo **no** hay `dev` ni `origin/dev`, **no omitas en silencio:** indícalo en la respuesta al usuario y, según el caso, crea `feature/<nombre>` desde `main` documentando la excepción o pide al usuario crear/alinear `dev` primero.
+  - **Git (obligatorio):** El slug de rama debe coincidir con el de la spec: `feature/<nombre>` en **kebab-case** (ej. spec `ui-board-refresh-v1.md` → rama `feature/ui-board-refresh-v1`). Para cambios de tooling, proceso o infraestructura que no son features de producto, usar `chore/<nombre-kebab>` (ej. `chore/sdd-cursor-workflow`).
+    - En **cada** repo Git que la feature modifique (`grip-backend`, `grip-frontend`, etc.), **antes** de commits relevantes: comprobar si existe `dev` (local o `origin/dev` tras `git fetch`). Si existe **`dev`**, es **obligatorio** situarte en `dev` actualizada (`git checkout dev` + `git pull` con el remoto configurado) y crear **`git checkout -b feature/<nombre>`**. Toda la implementación y commits de esa feature en ese repo van en esa rama hasta el PR/merge; **no** commitear la feature directamente en `main` ni en `dev`.
+    - **Excepción: `grip-specs`** no usa rama `dev`. En este repo, crear `feature/<nombre>` directamente desde `main`. Es un repo de documentación sin builds ni releases; la integración a `main` es directa tras revisión.
+    - Si en un repo de código **no** hay `dev` ni `origin/dev`, **no omitas en silencio:** indícalo en la respuesta al usuario y, según el caso, crea `feature/<nombre>` desde `main` documentando la excepción o pide al usuario crear/alinear `dev` primero.
     - Si no hay repositorio Git inicializado, indícalo y continúa el SDD sin bloquear.
   - Define el **contrato API** en la spec de la feature **y** actualiza `technical-spec.md` en este repo **y** los schemas Pydantic en el repo `grip-backend` según `api-contract-ssot.md` antes de implementar backend y UI.
   - Si cambian reglas de negocio o contrato, actualiza los docs (spec de la feature y/o specs base) para mantener la base SDD coherente.
   - **Sincronía de versión:** al publicar cambios en contrato o R1–R6, actualiza `technical-spec.md`, `functional-spec.md` §6.0 si aplica, `api-contract-ssot.md` y **`backend_audit_report.md`**; **reconcilia** el número de versión del encabezado del audit con el campo **Versión** de `technical-spec.md`.
 
-## 3. Arquitectura Frontend (Angular 17+ & Tailwind CSS)
+### 2.1 Commits y remoto (responsabilidad exclusiva del usuario)
+- **No ejecutes `git commit`, `git push`, `git merge`, ni acciones equivalentes de forma proactiva.** Esa decisión es **exclusiva del usuario** salvo que lo pida **explícitamente** en el mensaje (por ejemplo: "haz commit", "commitea los cambios", "push al remoto").
+- Puedes editar archivos, crear ramas cuando el usuario lo pida, sugerir mensajes de commit y recordar el flujo de ramas descrito arriba; el **commit** (y el push) los realiza el usuario por defecto.
+
+## 3. Arquitectura Frontend (Angular 21+ & Tailwind CSS)
 - **Standalone Components:** No uses `NgModules`. Usa la sintaxis moderna (ej. `@Component({ standalone: true, imports: [...] })`).
 - **Control Flow:** Usa la nueva sintaxis `@for` y `@if` en el HTML, no uses `*ngFor` ni `*ngIf`.
 - **Estilos:** Usa exclusivamente Tailwind CSS. Utiliza colores semánticos (ej. bg-green-100 para éxito/verified, bg-red-100 para alertas).
