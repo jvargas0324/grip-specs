@@ -11,8 +11,8 @@
 
 | Resultado | Cantidad |
 |-----------|----------|
-| 🟢 PASS   | 48       |
-| 🟡 WARNING| 2        |
+| 🟢 PASS   | 49       |
+| 🟡 WARNING| 1        |
 | 🔴 FAIL   | 0        |
 
 ---
@@ -47,7 +47,7 @@
 | POST /api/v1/weekly/feedback — payload (session_id, questions, target_id) | 🟢 PASS | WeeklyFeedbackRequest con session_id, questions (min 3, max 3), target_id. Spec usa target_id (alias target_user_id). |
 | POST /api/v1/chat — payload (message, store_code?) | 🟢 PASS | `ChatRequest` en `app/schemas/rag.py`; router `app/api/chat.py` con `Depends(get_current_user)`. Misma lógica que ask-grip vía `rag_service.ask_grip`. **Canónico para el SPA.** |
 | POST /api/v1/query/ask-grip — payload (query) | 🟢 PASS | AskGripRequest con query. Router en `app/api/rag.py` bajo prefix /api/v1/query. |
-| POST /api/v1/query/ask-grip — autenticación vs `/api/v1/chat` | 🟡 WARNING | El handler en `rag.py` no aplica `get_current_user` en la firma; `/api/v1/chat` sí. Deuda documentada en technical-spec §2 Módulo 4; alinear antes de exponer el alias en entornos sin otra capa de auth. |
+| POST /api/v1/query/ask-grip — autenticación vs `/api/v1/chat` | 🟢 PASS | `rag.py` ahora aplica `Depends(get_current_user)` igual que `chat.py`. Alineado 2026-03-28 (hallazgo SDD #21). |
 | POST /api/v1/da/create — payload (target_regional_id, store_id, due_date) | 🟢 PASS | DACreateRequest en `app/schemas/da.py`. Protegido con require_role(['ceo']). |
 | PATCH /api/v1/da/close — payload (da_id, firmas, resolution_notes) | 🟢 PASS | DACloseRequest con da_id, regional_signature_hash, ceo_signature_hash, resolution_notes opcional. |
 | PATCH /api/v1/findings/{id}/status — body (status) | 🟢 PASS | FindingStatusUpdateModel con status (open, in_progress, verified, reopened). Router en `app/api/findings.py`. |

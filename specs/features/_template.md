@@ -2,6 +2,10 @@
 
 > Copia este archivo a `specs/features/<nombre>.md` para cada nueva feature. Rellena las secciones y úsalo como SSOT antes de implementar (SDD). Ejemplo rellenado: [_example-sdd-reference.md](_example-sdd-reference.md).
 
+- **Estado:** borrador | spec-cerrada | en-implementación | completada | abandonada
+- **Spec base alineada:** vX.XX (versión de `technical-spec.md` contra la que se redactó/actualizó)
+- **Última actualización:** YYYY-MM-DD
+
 ## 1. Objetivo
 
 - **Aplicación(es):** Indicar una o varias: **grip-backend** | **grip-frontend**. Si aplica a varias, listar y describir qué parte toca cada una en "Alcance".

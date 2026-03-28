@@ -1,5 +1,8 @@
 # Diagnostico Arquitectonico Backend (estado vigente)
 
+- **Fecha:** 2026-03-23
+- **Spec base evaluada:** v7.20
+
 ## Alcance y metodo
 
 - Alcance: estado actual del sistema backend y su coherencia con SDD.

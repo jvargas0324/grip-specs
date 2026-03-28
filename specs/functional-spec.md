@@ -1,6 +1,6 @@
 # 📘 Especificación Funcional Maestra: Proyecto GRIP (Fase 1)
 
-**Estado:** Final y Definitiva (Ultra-Completa)  
+**Estado:** Activa — alineada con spec técnica v7.20
 **Metodología:** Spec-Driven Development (SDD)  
 **Concepto Central:** *Trust Through Control* (Confianza a través del Control)  
 **Alineación:** Revisión R1–R6 / SDD 2026-03-23 · Spec técnica **v7.20**: reglas y API en [technical-spec.md §4](technical-spec.md); resiliencia IA en [§3.F](technical-spec.md); UI/tema en [features/ui-board-refresh-v1.md](features/ui-board-refresh-v1.md) y canal M1 PDF async en [features/ingestion-pdf-ai-v1.md](features/ingestion-pdf-ai-v1.md) · Audit: [backend_audit_report.md](backend_audit_report.md)

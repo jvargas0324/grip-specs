@@ -2,6 +2,10 @@
 
 > Archivo de ejemplo rellenado a propósito pedagógico. Las features reales deben vivir en `specs/features/<nombre>.md` sin prefijo `_example-`.
 
+- **Estado:** completada
+- **Spec base alineada:** v7.20
+- **Última actualización:** 2026-03-23
+
 ## 1. Objetivo
 
 - **Aplicación(es):** grip-frontend (principal), grip-backend (solo si se añade query opcional).

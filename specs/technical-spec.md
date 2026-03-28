@@ -1,7 +1,7 @@
 # 🛠 Technical Specification Master: Proyecto GRIP (Fase 1)
 **Versión:** 7.20 (M1 canal PDF async: `error_code` + mensajes de fallo seguros en `GET /ingest/pdf/{job_id}`; columna `ingestion_jobs.error_code`)
 **Alcance:** Persistencia de datos, Contratos de API, Inteligencia de Extracción y Gobierno.
-**Arquitectura Core:** PostgreSQL (Relacional) + pgvector (Vectorial) + Python/FastAPI Backend + Front Angular
+**Arquitectura Core:** PostgreSQL (Relacional) + pgvector (Vectorial) + Python/FastAPI Backend + Angular 21+ Frontend
 **Alineación:** Revisión documental 2026-03-23 (v7.20: contrato PDF job — `error_code` estable y `error_detail` solo texto UI; logs conservan detalle técnico. v7.19: pestañas checklist manual vs PDF. v7.18: email JZ sesión + combobox tienda. Trazabilidad: [backend_audit_report.md](backend_audit_report.md).
 
 ---
@@ -143,7 +143,7 @@ CREATE TABLE focal_points (
 -- Tabla de Documentos DA
 CREATE TABLE da_interventions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    case_number SERIAL UNIQUE, -- Ej: DA-2026-001
+    case_number SERIAL UNIQUE, -- Auto-incrementing int. El formato display "DA-YYYY-NNN" es responsabilidad del frontend.
     creator_id UUID REFERENCES users(id), -- Siempre el CEO
     target_regional_id UUID REFERENCES users(id), -- Gerente Regional bajo supervisión
     store_id UUID REFERENCES stores(id),
@@ -328,15 +328,15 @@ CREATE TABLE da_findings_map (
 * **Query Params:**
   * `store_id`: `UUID` (opcional). Filtra hallazgos a una tienda específica. Ideal para el Gerente Regional.
   * `store_code`: `STRING` (opcional). Alternativa a `store_id`; se resuelve al store correspondiente (ej: `CACIQUE T002`).
-  * `region_id`: `UUID` (opcional). Agrega todas las tiendas de la zona. Para vista consolidada.
+  * `region_id`: `UUID` (opcional). **Solo efectivo para CEO** (R3 drill-down): permite al CEO consultar una zona específica. Para roles no-CEO se ignora y se usa `current_user.zone_id` como filtro.
   * `week_number`: `INT` (opcional).
   * `start_date`, `end_date`: `DATE` (opcional). Filtro por rango de fechas de visitas.
 * **Logic:** Llama a `get_weekly_summary`. Agrega el cumplimiento y devuelve el TOP 5 de hallazgos con `severity_rank = 'high'`. Gemini genera `focal_points` y `executive_brief` (Resumen Ejecutivo).
 
 **POST** `/api/v1/weekly/feedback`
 
-* **Payload:** `{ "session_id": "UUID", "questions": ["...", "...", "..."], "target_id": "UUID" }`
-* **Logic:** Registra el esquema de 3 preguntas del COO/CEO. Dispara una notificación push al Gerente Regional.
+* **Payload:** `{ "session_id": "UUID", "questions": ["...", "...", "..."], "target_user_id": "UUID" }`
+* **Logic:** Registra el esquema de 3 preguntas del COO/CEO. Dispara una notificación push al Gerente Regional — **⚠ pendiente de implementación:** la persistencia del feedback funciona pero el mecanismo de notificación (push/email/websocket) no está implementado.
 
 ### Módulo 4: RAG Query / Ask GRIP (Chat)
 
@@ -401,7 +401,7 @@ CREATE TABLE da_findings_map (
 
 * **Model:** `gemini-2.5-flash-lite`
 * **Logic:** Toma los `findings` de severidad `high`.
-* **System Prompt:** "Resume para un ejecutivo ocupado. Ve al grano, resalta el riesgo de negocio. Detecta si el reporte del Gerente contradice la data cruda de reincidencias."
+* **System Prompt:** "Resume para un ejecutivo ocupado. Ve al grano, resalta el riesgo de negocio. Consolida 3 Focal Points. Detecta si el reporte del Gerente contradice la data cruda de reincidencias." Output esperado: JSON con claves `focal_points` (array de 3 strings) y `executive_brief` (string, párrafo breve).
 
 ### D. Flujo de Ingestión en Memoria - RAG (Módulo 4)
 
@@ -444,7 +444,7 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
 
 ## 5. Definición de Interfaz (Technical UI State)
 
-* **State: Pre-Visita (Jefe de Zona):** * Carga: `focal_points.filter(store_id=current, active=true)`
+* **State: Pre-Visita (Jefe de Zona):** * Carga: `focal_points.filter(store_id=current, active=true)` — **⚠ pendiente de implementación:** tabla `focal_points` existe en DB pero no hay endpoints API ni UI para CRUD. Implementar cuando se aborde la feature de Pre-Visita.
 * Carga: `findings.filter(store_id=current, status='open')`
 
 
@@ -505,3 +505,4 @@ Normativa alineada con el cliente IA en `grip-backend/app/core/ai_client.py` y c
 * **Base de Datos:** PostgreSQL 16+ con extensión `pgvector` (vectores `VECTOR(768)`).
 * **Proveedor IA:** Google Generative AI SDK (`google-generativeai`). **Generación de texto:** `gemini-2.5-flash-lite`. **Embeddings:** `gemini-embedding-001` (768 dimensiones).
 * **Seguridad:** FastAPI Dependencies (RBAC + JWT).
+  * **Mock auth actual (pre-JWT):** headers `X-User-Id`, `X-User-Role`, `X-User-Zone-Id`. Si falta `X-User-Role`, el sistema asume el rol de **menor privilegio** (`jz`); si falta `X-User-Id`, se genera UUID temporal. Este comportamiento es temporal y debe reemplazarse por JWT real antes de exponer la API sin gateway protegido.

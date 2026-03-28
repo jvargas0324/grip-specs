@@ -1,5 +1,9 @@
 # Ingesta PDF + IA (M1) v1
 
+- **Estado:** completada
+- **Spec base alineada:** v7.20
+- **Última actualización:** 2026-03-23
+
 ## 1. Objetivo
 
 - **Aplicación(es):** `grip-backend` y `grip-frontend`.

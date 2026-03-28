@@ -1,5 +1,9 @@
 # ui-board-refresh-v1
 
+- **Estado:** completada
+- **Spec base alineada:** v7.20
+- **Última actualización:** 2026-03-23
+
 > Feature de **solo presentación**: sistema visual corporativo (tokens, tipografía, tema claro/oscuro) aplicado a todas las vistas del SPA. Referencia de diseño: frames corporativos “Weekly Reports” (light / dark); colores y fuentes alineados a guía de marca GRIP.
 
 ## 1. Objetivo

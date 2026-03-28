@@ -1,6 +1,6 @@
 # Contrato API — SSOT operativo (GRIP)
 
-Este archivo vive en el repo **grip-specs**. El código Pydantic está en el repo hermano **grip-backend** (misma carpeta padre en disco, p. ej. `weekly-app/grip-backend`).
+Este archivo vive en el repo **grip-specs**. El código Pydantic está en el repo hermano **grip-backend** (misma carpeta padre en disco, p. ej. `weekly-apps/grip-backend`).
 
 No se mantiene un `openapi.yaml` generado en el repo de specs. El contrato se define así:
 
