@@ -6,7 +6,7 @@
 ## Alcance y metodo
 
 - Alcance: estado actual del sistema backend y su coherencia con SDD.
-- Fuentes usadas: `specs/technical-spec.md`, `specs/functional-spec.md`, `specs/api-contract-ssot.md`, `specs/backend_audit_report.md`, y estructura/implementacion en `grip-backend/app/**`, `grip-backend/alembic/**`.
+- Fuentes usadas: `specs/GRIP-SDD-Functional-Specs.md`, `specs/GRIP-SDD-Functional-Specs.md`, `specs/api-contract-ssot.md`, `specs/backend_audit_report.md`, y estructura/implementacion en `grip-backend/app/**`, `grip-backend/alembic/**`.
 - Criterio: solo inferencias con evidencia observable. Si falta evidencia, se declara explicitamente.
 
 ## 1) Estado actual
@@ -14,7 +14,7 @@
 - Stack vigente: FastAPI + SQLAlchemy + Alembic + PostgreSQL/pgvector + Pydantic v2 + Gemini.
 - Arquitectura por capas vigente en backend: `api/`, `services/`, `db/models/`.
 - Contrato API gobernado por SSOT dual:
-  - especificacion humana en `specs/technical-spec.md` (seccion API),
+  - especificacion humana en `specs/GRIP-SDD-Functional-Specs.md` (seccion API),
   - validacion ejecutable en `grip-backend/app/schemas/` segun `specs/api-contract-ssot.md`.
 - Persistencia hibrida relacional + vectorial:
   - modelos con embeddings (`Vector(768)`) y migraciones de pgvector/HNSW en Alembic.

@@ -14,7 +14,7 @@ Cuando un proveedor IA falle (timeout, cuota, error API), el sistema debe preser
 
 ## Evidencia encontrada en el proyecto
 
-- `specs/technical-spec.md` (seccion de resiliencia): establece no bloqueo por fallas IA.
+- `specs/GRIP-SDD-Functional-Specs.md` (seccion de resiliencia): establece no bloqueo por fallas IA.
 - `specs/backend_audit_report.md` (seccion de resiliencia/trazabilidad): confirma implementacion en rutas criticas.
 - `grip-backend/app/core/ai_client.py`: taxonomia de errores (`GeminiAPIError`, `GeminiQuotaError`, `GeminiTimeoutError`).
 - `grip-backend/app/services/weekly_service.py`: fallback cuando falla generacion IA.

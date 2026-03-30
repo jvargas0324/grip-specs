@@ -1,20 +1,20 @@
 # Ask GRIP — Diseño de agente conversacional (borrador para retomar)
 
-> **Estado:** diseño exploratorio (no sustituye aún a `technical-spec.md` ni a `api-contract-ssot.md`).  
-> **Relación con otras features:** independiente de [ingestion-pdf-ai-v1.md](ingestion-pdf-ai-v1.md) (M1-PDF). Cuando se implemente, promover a spec formal SDD y alinear versión en `technical-spec.md` y `backend_audit_report.md`.
+> **Estado:** diseño exploratorio (no sustituye aún a `GRIP-SDD-Functional-Specs.md` ni a `api-contract-ssot.md`).  
+> **Relación con otras features:** independiente de [ingestion-pdf-ai-v1.md](ingestion-pdf-ai-v1.md) (M1-PDF). Cuando se implemente, promover a spec formal SDD y alinear versión en `GRIP-SDD-Functional-Specs.md` y `backend_audit_report.md`.
 
 ## 1. Objetivo
 
 - **Problema:** El flujo actual de Ask GRIP (`app/services/rag_service.py`, `ask_grip`) hace **un** embedding de la pregunta, recupera hasta **5** fragmentos (findings + strategic_feedback mezclados) y **una** llamada a `generate_plain_text`. Las preguntas ejecutivas ambiguas o multi‑fondo no se benefician de reformulación, segunda búsqueda ni razonamiento por pasos.
-- **Propuesta:** Introducir un **agente ligero** (bucle acotado) que use **herramientas** (funciones determinísticas sobre PostgreSQL / pgvector) y un modelo de lenguaje (Gemini) con **límites de coste, latencia y trazabilidad**, manteniendo la resiliencia descrita en [technical-spec.md §3.F](../technical-spec.md).
+- **Propuesta:** Introducir un **agente ligero** (bucle acotado) que use **herramientas** (funciones determinísticas sobre PostgreSQL / pgvector) y un modelo de lenguaje (Gemini) con **límites de coste, latencia y trazabilidad**, manteniendo la resiliencia descrita en [GRIP-SDD-Functional-Specs.md §3.F](../GRIP-SDD-Functional-Specs.md).
 
 ## 2. Referencias normativas
 
 | Documento | Uso |
 |-----------|-----|
-| [technical-spec.md §3.D / Módulo 4](../technical-spec.md) | RAG, prompts base, intención de “memoria operativa”. |
-| [technical-spec.md §3.F](../technical-spec.md) | Resiliencia IA: `try/except`, degradación, no bloquear transacciones críticas. |
-| [functional-spec.md](../functional-spec.md) | Rol CEO / Ask GRIP en journeys (ajustar cuando el agente cambie permisos o UX). |
+| [GRIP-SDD-Functional-Specs.md §3.D / Módulo 4](../GRIP-SDD-Functional-Specs.md) | RAG, prompts base, intención de “memoria operativa”. |
+| [GRIP-SDD-Functional-Specs.md §3.F](../GRIP-SDD-Functional-Specs.md) | Resiliencia IA: `try/except`, degradación, no bloquear transacciones críticas. |
+| [GRIP-SDD-Functional-Specs.md](../GRIP-SDD-Functional-Specs.md) | Rol CEO / Ask GRIP en journeys (ajustar cuando el agente cambie permisos o UX). |
 | Código actual | `app/services/rag_service.py`, `app/api/chat.py`, `app/api/rag.py`. |
 
 ## 3. Estado actual (baseline)
@@ -172,7 +172,7 @@ Por defecto `classic` hasta validar en staging.
 }
 ```
 
-Cualquier cambio de contrato deberá reflejarse después en `technical-spec.md`, `api-contract-ssot.md` y schemas Pydantic (`app/schemas/rag.py`).
+Cualquier cambio de contrato deberá reflejarse después en `GRIP-SDD-Functional-Specs.md`, `api-contract-ssot.md` y schemas Pydantic (`app/schemas/rag.py`).
 
 ## 9. Seguridad y gobierno de datos
 
@@ -203,7 +203,7 @@ Cualquier cambio de contrato deberá reflejarse después en `technical-spec.md`,
 
 ## 13. Notas
 
-- Este archivo **no** incrementa la versión de `technical-spec.md` hasta que el equipo promueva la feature a implementación (SDD).
+- Este archivo **no** incrementa la versión de `GRIP-SDD-Functional-Specs.md` hasta que el equipo promueva la feature a implementación (SDD).
 - Frontend: si se expone `mode` o nuevos campos en la respuesta, actualizar el servicio de chat en Angular y la spec de UI en la feature correspondiente.
 
 ---

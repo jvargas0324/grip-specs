@@ -14,8 +14,8 @@
 
 ## 2. Referencia a specs base
 
-- Reglas de negocio: [functional-spec.md](../functional-spec.md) §2.3 (Módulo 3 Weekly Hub).
-- Contrato API: [technical-spec.md](../technical-spec.md) §2 Módulo 3 — `GET /api/v1/weekly/summary` (`start_date`, `end_date`).
+- Reglas de negocio: [GRIP-SDD-Functional-Specs.md](../GRIP-SDD-Functional-Specs.md) §2.3 (Módulo 3 Weekly Hub).
+- Contrato API: [GRIP-SDD-Functional-Specs.md](../GRIP-SDD-Functional-Specs.md) §2 Módulo 3 — `GET /api/v1/weekly/summary` (`start_date`, `end_date`).
 - SSOT Pydantic: [api-contract-ssot.md](../api-contract-ssot.md) → en repo `grip-backend`, `app/schemas/weekly.py`.
 
 ## 3. Actores y permisos

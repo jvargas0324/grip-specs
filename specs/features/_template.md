@@ -3,7 +3,7 @@
 > Copia este archivo a `specs/features/<nombre>.md` para cada nueva feature. Rellena las secciones y úsalo como SSOT antes de implementar (SDD). Ejemplo rellenado: [_example-sdd-reference.md](_example-sdd-reference.md).
 
 - **Estado:** borrador | spec-cerrada | en-implementación | completada | abandonada
-- **Spec base alineada:** vX.XX (versión de `technical-spec.md` contra la que se redactó/actualizó)
+- **Spec base alineada:** vX.XX (versión de `GRIP-SDD-Functional-Specs.md` contra la que se redactó/actualizó)
 - **Última actualización:** YYYY-MM-DD
 
 ## 1. Objetivo
@@ -14,10 +14,10 @@
 
 ## 2. Referencia a specs base
 
-- Reglas de negocio existentes que aplican: [functional-spec.md](../functional-spec.md) (secciones X, Y).
-- Contrato y arquitectura: [technical-spec.md](../technical-spec.md). Nuevos endpoints o cambios deben alinearse con la API actual.
-- Si la feature usa **IA / Gemini:** [technical-spec.md §3](../technical-spec.md) y §3.F (resiliencia).
-- Si la feature toca **reglas R1–R6** o estados de hallazgos / DA / CEO: [technical-spec.md §4](../technical-spec.md) y [functional-spec.md §6.0](../functional-spec.md).
+- Reglas de negocio existentes que aplican: [GRIP-SDD-Functional-Specs.md](../GRIP-SDD-Functional-Specs.md) (secciones X, Y).
+- Contrato y arquitectura: [GRIP-SDD-Functional-Specs.md](../GRIP-SDD-Functional-Specs.md). Nuevos endpoints o cambios deben alinearse con la API actual.
+- Si la feature usa **IA / Gemini:** [GRIP-SDD-Functional-Specs.md §3](../GRIP-SDD-Functional-Specs.md) y §3.F (resiliencia).
+- Si la feature toca **reglas R1–R6** o estados de hallazgos / DA / CEO: [GRIP-SDD-Functional-Specs.md §4](../GRIP-SDD-Functional-Specs.md) y [GRIP-SDD-Functional-Specs.md §6.0](../GRIP-SDD-Functional-Specs.md).
 
 ## 3. Actores y permisos
 

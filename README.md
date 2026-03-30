@@ -7,8 +7,8 @@ Repositorio dedicado a **especificaciones**, **auditoría de contrato** y **regl
 | Ruta | Propósito |
 |------|-----------|
 | `.cursorrules` | Reglas de la IA en Cursor (SDD, stack, R1–R6). |
-| `specs/technical-spec.md` | API, esquema de datos, prompts, reglas R1–R6 técnicas. |
-| `specs/functional-spec.md` | Journeys, gobernanza, índice R1–R6 funcional. |
+| `specs/GRIP-SDD-Functional-Specs.md` | API, esquema de datos, prompts, reglas R1–R6 técnicas. |
+| `specs/GRIP-SDD-Functional-Specs.md` | Journeys, gobernanza, índice R1–R6 funcional. |
 | `specs/api-contract-ssot.md` | Mapa spec ↔ Pydantic en el repo `grip-backend`. |
 | `specs/backend_audit_report.md` | Trazabilidad implementación vs spec. |
 | `specs/features/` | Plantilla y specs por feature. |
@@ -44,7 +44,7 @@ En Cursor o VS Code: **File → Open Workspace from File…** → abre [`GRIP.co
 
 ### Citas `@` en Cursor
 
-En chat o Composer, usa **@** para adjuntar archivos de este repo (por ejemplo `@specs/technical-spec.md`, `@specs/api-contract-ssot.md`, `@specs/features/mi-feature.md`). Eso carga el contrato y las reglas R1–R6 **antes** de pedir implementación en `grip-backend` o `grip-frontend`, en línea con el flujo SDD.
+En chat o Composer, usa **@** para adjuntar archivos de este repo (por ejemplo `@specs/GRIP-SDD-Functional-Specs.md`, `@specs/api-contract-ssot.md`, `@specs/features/mi-feature.md`). Eso carga el contrato y las reglas R1–R6 **antes** de pedir implementación en `grip-backend` o `grip-frontend`, en línea con el flujo SDD.
 
 En clones locales con los tres repos al mismo nivel, la raíz de `grip-backend` y `grip-frontend` incluye un `AGENTS.md` con enlaces al SSOT por si trabajas con una sola carpeta abierta en el IDE.
 
@@ -64,7 +64,7 @@ git clone https://github.com/jvargas0324/grip-specs.git grip-specs
 
 ### Cobertura de specs por feature
 
-Los **módulos base** (1-5) están cubiertos por las specs maestras (`technical-spec.md` y `functional-spec.md`). Las **feature specs individuales** en `specs/features/` se crean para:
+Los **módulos base** (1-5) están cubiertos por las specs maestras (`GRIP-SDD-Functional-Specs.md` y `GRIP-SDD-Functional-Specs.md`). Las **feature specs individuales** en `specs/features/` se crean para:
 
 - Funcionalidad incremental o evolutiva sobre un módulo base (ej. canal PDF async sobre M1).
 - Cambios transversales de UI/UX (ej. sistema visual corporativo).

@@ -4,10 +4,10 @@ Este archivo vive en el repo **grip-specs**. El código Pydantic está en el rep
 
 No se mantiene un `openapi.yaml` generado en el repo de specs. El contrato se define así:
 
-1. **Humano / producto:** [technical-spec.md §2](technical-spec.md) (endpoints, payloads, lógica).
+1. **Humano / producto:** [GRIP-SDD-Functional-Specs.md §2](GRIP-SDD-Functional-Specs.md) (endpoints, payloads, lógica).
 2. **Máquina / validación HTTP:** esquemas Pydantic v2 en el repo `grip-backend`: `app/schemas/` y modelos locales en `app/api/` cuando aplica.
 
-Cualquier cambio de API debe actualizar **ambos**: la sección correspondiente de `technical-spec.md` y los schemas (o modelos) del backend.
+Cualquier cambio de API debe actualizar **ambos**: la sección correspondiente de `GRIP-SDD-Functional-Specs.md` y los schemas (o modelos) del backend.
 
 ## Mapa módulo → código
 
@@ -39,7 +39,7 @@ Notas de contrato para el canal PDF:
 
 ## Reglas de negocio (R1–R6)
 
-Definición canónica: [technical-spec.md §4](technical-spec.md). Trazabilidad implementación: [backend_audit_report.md](backend_audit_report.md) §C.
+Definición canónica: [GRIP-SDD-Functional-Specs.md §4](GRIP-SDD-Functional-Specs.md). Trazabilidad implementación: [backend_audit_report.md](backend_audit_report.md) §C.
 
 ## Scope territorial (users -> zones)
 

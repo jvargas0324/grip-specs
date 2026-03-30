@@ -14,8 +14,8 @@ Las reglas R1-R6 se tratan como contrato de negocio-tecnico y deben mantener tra
 
 ## Evidencia encontrada en el proyecto
 
-- `specs/technical-spec.md` (seccion de reglas R1-R6).
-- `specs/functional-spec.md` (indice funcional de R1-R6).
+- `specs/GRIP-SDD-Functional-Specs.md` (seccion de reglas R1-R6).
+- `specs/GRIP-SDD-Functional-Specs.md` (indice funcional de R1-R6).
 - `specs/backend_audit_report.md` (matriz de correspondencia R* vs codigo).
 - `specs/api-contract-ssot.md` (alineacion technical-spec vs schemas Pydantic).
 - `.cursorrules` en `grip-specs` (flujo SDD y sincronia documental obligatoria).

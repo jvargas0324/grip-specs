@@ -61,7 +61,7 @@
 
 ## C. Hard constraints (R1–R6)
 
-Definición canónica: [technical-spec.md §4](technical-spec.md). El **cierre DA con ambos hashes** es obligación del contrato API (§2 Módulo 5), no el identificador R6. **R6** = memoria post-DA / RAG.
+Definición canónica: [GRIP-SDD-Functional-Specs.md §4](GRIP-SDD-Functional-Specs.md). El **cierre DA con ambos hashes** es obligación del contrato API (§2 Módulo 5), no el identificador R6. **R6** = memoria post-DA / RAG.
 
 | Regla | Resultado | Detalle |
 |-------|-----------|---------|
@@ -76,7 +76,7 @@ Definición canónica: [technical-spec.md §4](technical-spec.md). El **cierre D
 
 ## D. Integración IA
 
-Normativa documentada en [technical-spec.md §3.F](technical-spec.md) (resiliencia y degradación).
+Normativa documentada en [GRIP-SDD-Functional-Specs.md §3.F](GRIP-SDD-Functional-Specs.md) (resiliencia y degradación).
 
 | Ítem | Resultado | Detalle |
 |------|-----------|---------|
@@ -110,7 +110,7 @@ Normativa documentada en [technical-spec.md §3.F](technical-spec.md) (resilienc
 | **R5** | Pendiente MFA; `close_da` solo valida hashes |
 | **R6** | `app/services/da_service.py` `close_da` — embedding + StrategicFeedback para RAG |
 
-**Mantenimiento:** Tras cambiar contratos o reglas R*, actualizar [technical-spec.md](technical-spec.md), [functional-spec.md §6.0](functional-spec.md), [api-contract-ssot.md](api-contract-ssot.md) y esta sección en el mismo cambio; **reconciliar la versión** del encabezado de este informe con la versión declarada en `technical-spec.md`.
+**Mantenimiento:** Tras cambiar contratos o reglas R*, actualizar [GRIP-SDD-Functional-Specs.md](GRIP-SDD-Functional-Specs.md), [GRIP-SDD-Functional-Specs.md §6.0](GRIP-SDD-Functional-Specs.md), [api-contract-ssot.md](api-contract-ssot.md) y esta sección en el mismo cambio; **reconciliar la versión** del encabezado de este informe con la versión declarada en `GRIP-SDD-Functional-Specs.md`.
 
 ---
 

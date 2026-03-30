@@ -18,7 +18,7 @@
 ## 2) Formalizar criterio de reincidencia DA
 
 - **decision a registrar**: definir algoritmo canonico (regla unica) para reincidencia de DA y su trazabilidad en pruebas.
-- **evidencia encontrada**: `specs/technical-spec.md` describe umbral orientativo; audit report refleja implementacion heuristica no totalmente equivalente.
+- **evidencia encontrada**: `specs/GRIP-SDD-Functional-Specs.md` describe umbral orientativo; audit report refleja implementacion heuristica no totalmente equivalente.
 - **problema que resuelve**: evita decisiones de negocio ambiguas y comportamientos no deterministas.
 - **riesgos o limitaciones**: impacto en reglas de negocio, UX, auditoria y reportes historicos.
 - **prioridad**: alta
@@ -37,7 +37,7 @@
 
 - **decision a registrar**: mantener base relacional-operativa con enriquecimiento vectorial en entidades clave.
 - **evidencia encontrada**:
-  - `specs/technical-spec.md` (arquitectura core y modelo con embeddings),
+  - `specs/GRIP-SDD-Functional-Specs.md` (arquitectura core y modelo con embeddings),
   - migraciones Alembic con extension vector e indices HNSW en `grip-backend/alembic/versions/`,
   - modelos con `Vector(768)` en `grip-backend/app/db/models/`.
 - **problema que resuelve**: combina integridad transaccional con recuperacion semantica para RAG/IA.
@@ -49,7 +49,7 @@
 
 - **decision a registrar**: ante fallo IA, persistir resultado principal y degradar campos IA no criticos.
 - **evidencia encontrada**:
-  - `specs/technical-spec.md` (seccion de resiliencia),
+  - `specs/GRIP-SDD-Functional-Specs.md` (seccion de resiliencia),
   - trazabilidad en `specs/backend_audit_report.md`,
   - manejo de excepciones/fallback en servicios de `grip-backend/app/services/`.
 - **problema que resuelve**: evita indisponibilidad funcional por dependencia externa IA.
@@ -61,8 +61,8 @@
 
 - **decision a registrar**: mantener reglas R1-R6 como contrato normativo y trazabilidad obligatoria en backend.
 - **evidencia encontrada**:
-  - definicion en `specs/technical-spec.md`,
-  - indice funcional en `specs/functional-spec.md`,
+  - definicion en `specs/GRIP-SDD-Functional-Specs.md`,
+  - indice funcional en `specs/GRIP-SDD-Functional-Specs.md`,
   - mapeo en `specs/backend_audit_report.md`.
 - **problema que resuelve**: alinea negocio, API y codigo bajo una unica fuente verificable.
 - **riesgos o limitaciones**: costo de mantenimiento documental y disciplina de equipo requerida.

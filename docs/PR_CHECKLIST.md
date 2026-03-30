@@ -29,7 +29,7 @@ Copia o adapta lo siguiente. Sustituye `<nombre-feature>` por el slug real.
 ## Contrato y auditoría
 - [ ] `api-contract-ssot.md` y schemas Pydantic coherentes (si hubo cambio de API o DTOs).
 - [ ] `backend_audit_report.md` actualizado si cambiaron endpoints o reglas R1–R6.
-- [ ] Versión en `technical-spec.md` y encabezado del audit reconciliados si aplica.
+- [ ] Versión en `GRIP-SDD-Functional-Specs.md` y encabezado del audit reconciliados si aplica.
 
 ## Notas para revisores
 [Degradación Gemini, edge cases, flags de entorno, etc.]
@@ -37,7 +37,7 @@ Copia o adapta lo siguiente. Sustituye `<nombre-feature>` por el slug real.
 
 ## Revisión asistida por IA
 
-Si usas Cursor en el review: adjunta o `@`-menciona `specs/features/<nombre-feature>.md` y las secciones de `technical-spec.md` que definan el comportamiento esperado. Así el modelo valida contra spec, no contra suposiciones.
+Si usas Cursor en el review: adjunta o `@`-menciona `specs/features/<nombre-feature>.md` y las secciones de `GRIP-SDD-Functional-Specs.md` que definan el comportamiento esperado. Así el modelo valida contra spec, no contra suposiciones.
 
 ## Hotfix
 

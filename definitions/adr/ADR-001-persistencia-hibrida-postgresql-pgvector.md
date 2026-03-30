@@ -14,7 +14,7 @@ El backend usa PostgreSQL como sistema transaccional principal y pgvector para c
 
 ## Evidencia encontrada en el proyecto
 
-- `specs/technical-spec.md`: define arquitectura core con PostgreSQL + pgvector y modelo con embeddings.
+- `specs/GRIP-SDD-Functional-Specs.md`: define arquitectura core con PostgreSQL + pgvector y modelo con embeddings.
 - `grip-backend/alembic/versions/0001_create_extensions.py`: habilita extension `vector`.
 - `grip-backend/alembic/versions/0002_create_all_tables.py`: crea indices HNSW para embeddings.
 - `grip-backend/alembic/versions/0003_embedding_768.py`: consolida dimension `Vector(768)`.
