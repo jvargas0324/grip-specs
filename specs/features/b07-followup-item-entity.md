@@ -272,3 +272,4 @@ FRONTEND:
 - [x] **CA-06:** Job de escalación marca como `escalated_to` el superior del owner cuando `deadline < today`
 - [x] **CA-07:** `GET /followups?overdue=true` retorna items con deadline vencido en scope del usuario
 - [x] **CA-08:** Un `FollowUpItem` en status `VERIFIED` no puede actualizarse (retorna 409)
+- [x] **CA-09:** Link "Follow-Ups" visible en sidebar para todos los roles. Cada rol ve su scope.

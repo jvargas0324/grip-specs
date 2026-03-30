@@ -235,3 +235,4 @@ FRONTEND:
 - [x] **CA-06:** El JZ puede añadir ítems variables con `source: JZ` en cualquier sección
 - [x] **CA-07:** La UI completa una visita de 10 ítems en ≤ 3 minutos — implementado: 1-tap per item, section tabs, progress bar
 - [x] **CA-08:** La foto se captura inline sin salir del flujo del checklist — implementado: panel inline en NO_CUMPLE con observation + photo_url
+- [x] **CA-09:** Link "Checklist" visible en sidebar para roles JZ, GV, Regional. Guard en ruta. No visible para COO/CEO.
